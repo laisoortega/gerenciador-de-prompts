@@ -207,8 +207,22 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     };
 
     const deleteCategory = (id: string) => {
-        // Lógica recursiva para deletar filhos seria ideal aqui
-        setCategories(prev => prev.filter(c => c.id !== id && c.parent_id !== id));
+        // Collect all IDs to delete (recursive)
+        const getIdsToDelete = (catId: string, currentCats: Category[]): string[] => {
+            const children = currentCats.filter(c => c.parent_id === catId);
+            const childIds = children.flatMap(child => getIdsToDelete(child.id, currentCats));
+            return [catId, ...childIds];
+        };
+
+        const idsToDelete = getIdsToDelete(id, categories);
+
+        // Remove categories
+        setCategories(prev => prev.filter(c => !idsToDelete.includes(c.id)));
+
+        // Remove prompts associated with these categories
+        setPrompts(prev => prev.filter(p => !p.category_id || !idsToDelete.includes(p.category_id)));
+
+        setUser(prev => prev ? { ...prev, categories_count: Math.max(0, prev.categories_count - idsToDelete.length) } : null);
     };
 
     const toggleCategoryExpand = (id: string) => {
