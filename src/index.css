@@ -155,11 +155,18 @@ body {
 
 /* UI Polish Utilities */
 .glass-panel {
-  @apply bg-bg-surface/80 backdrop-blur-md border border-border-default/50;
+  background-color: rgba(18, 20, 26, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  @apply backdrop-blur-md;
 }
 
 .card-hover {
-  @apply transition-all duration-200 hover:border-primary-500/50 hover:shadow-lg hover:shadow-primary-500/10 hover:-translate-y-1;
+  @apply transition-all duration-200 hover:shadow-lg hover:-translate-y-1;
+}
+
+.card-hover:hover {
+  border-color: rgba(59, 130, 246, 0.5);
+  box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.1), 0 4px 6px -2px rgba(59, 130, 246, 0.05);
 }
 
 .page-container {
