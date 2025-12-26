@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useMemo } from 'react';
 import { User, Workspace, Prompt, Category, ViewType, Plan } from '../types';
-import { INITIAL_USER, INITIAL_WORKSPACES, INITIAL_PROMPTS, INITIAL_CATEGORIES, MOCK_PLANS } from '../services/mockData';
+import { INITIAL_USER, MOCK_WORKSPACES, MOCK_PROMPTS, MOCK_CATEGORIES, MOCK_PLANS } from '../services/mockData';
 
 interface StoreContextType {
     user: User | null;
@@ -18,7 +18,7 @@ interface StoreContextType {
     completeOnboarding: (data: Partial<User>) => void;
 
     // Prompt CRUD
-    addPrompt: (prompt: Omit<Prompt, 'id' | 'user_id' | 'copy_count' | 'updated_at' | 'order_index'>) => void;
+    addPrompt: (prompt: Omit<Prompt, 'id' | 'user_id' | 'copy_count' | 'updated_at' | 'created_at' | 'order_index'>) => void;
     updatePrompt: (id: string, data: Partial<Prompt>) => void;
     deletePrompt: (id: string) => void;
     toggleFavorite: (id: string) => void;
@@ -41,6 +41,12 @@ interface StoreContextType {
 
     // UI
     setCurrentView: (view: ViewType) => void;
+    searchQuery: string;
+    setSearchQuery: (query: string) => void;
+
+    // Data Management
+    exportData: () => void;
+    importData: (jsonData: string) => void;
 
     // Helper
     categoryTree: Category[];
@@ -50,10 +56,11 @@ const StoreContext = createContext<StoreContextType | undefined>(undefined);
 
 export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [user, setUser] = useState<User | null>(null);
-    const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
-    const [prompts, setPrompts] = useState<Prompt[]>([]);
-    const [categories, setCategories] = useState<Category[]>([]);
-    const [plans, setPlans] = useState<Plan[]>(MOCK_PLANS);
+    const [workspaces, setWorkspaces] = useState<Workspace[]>(MOCK_WORKSPACES);
+    const [prompts, setPrompts] = useState<Prompt[]>(MOCK_PROMPTS);
+    const [categories, setCategories] = useState<Category[]>(MOCK_CATEGORIES);
+    const [plans] = useState<Plan[]>(MOCK_PLANS);
+    const [searchQuery, setSearchQuery] = useState('');
     const [activeWorkspaceId, setActiveWorkspaceId] = useState<string>('');
     const [isLoading, setIsLoading] = useState(true);
     const [currentView, setCurrentView] = useState<ViewType>('cards');
@@ -66,10 +73,10 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
             if (storedUser) {
                 setUser(JSON.parse(storedUser));
-                setWorkspaces(INITIAL_WORKSPACES);
-                setPrompts(INITIAL_PROMPTS);
-                setCategories(INITIAL_CATEGORIES);
-                setActiveWorkspaceId(INITIAL_WORKSPACES[0].id);
+                setWorkspaces(MOCK_WORKSPACES);
+                setPrompts(MOCK_PROMPTS);
+                setCategories(MOCK_CATEGORIES);
+                setActiveWorkspaceId(MOCK_WORKSPACES[0].id);
             }
             setIsLoading(false);
         }, 800);
@@ -83,10 +90,10 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
             const role = email.includes('admin') ? 'super_admin' : 'user';
             const newUser = { ...INITIAL_USER, email, role: role as any, name: email.split('@')[0] };
             setUser(newUser);
-            setWorkspaces(INITIAL_WORKSPACES);
-            setPrompts(INITIAL_PROMPTS);
-            setCategories(INITIAL_CATEGORIES);
-            setActiveWorkspaceId(INITIAL_WORKSPACES[0].id);
+            setWorkspaces(MOCK_WORKSPACES);
+            setPrompts(MOCK_PROMPTS);
+            setCategories(MOCK_CATEGORIES);
+            setActiveWorkspaceId(MOCK_WORKSPACES[0].id);
             localStorage.setItem('pm_user', JSON.stringify(newUser));
             setIsLoading(false);
         }, 600);
@@ -105,7 +112,7 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     };
 
     // --- Prompts ---
-    const addPrompt = (data: Omit<Prompt, 'id' | 'user_id' | 'copy_count' | 'updated_at' | 'order_index'>) => {
+    const addPrompt = (data: Omit<Prompt, 'id' | 'user_id' | 'copy_count' | 'updated_at' | 'created_at' | 'order_index'>) => {
         if (!user) return;
         const newPrompt: Prompt = {
             ...data,
@@ -113,7 +120,8 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
             user_id: user.id,
             copy_count: 0,
             updated_at: new Date().toISOString(),
-            is_favorite: false,
+            created_at: new Date().toISOString(),
+            is_favorite: data.is_favorite || false,
             order_index: prompts.length
         };
         setPrompts(prev => [newPrompt, ...prev]);
@@ -164,8 +172,13 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
     // --- Categories ---
     const addCategory = (data: Partial<Category>) => {
+        const id = `cat-${Date.now()}`;
+        const parentPath = data.parent_id
+            ? categories.find(c => c.id === data.parent_id)?.path
+            : null;
+
         const newCat: Category = {
-            id: `cat-${Date.now()}`,
+            id,
             workspace_id: activeWorkspaceId,
             parent_id: data.parent_id || null,
             name: data.name || 'Nova Categoria',
@@ -173,9 +186,11 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
             color: data.color || '#3b82f6',
             icon: data.icon,
             depth: data.depth || 0,
+            path: parentPath ? `${parentPath}/${id}` : id,
             is_expanded: true,
             prompt_count: 0,
-            order_index: categories.length
+            order_index: categories.length,
+            children: []
         };
         setCategories(prev => [...prev, newCat]);
         setUser(prev => prev ? { ...prev, categories_count: prev.categories_count + 1 } : null);
@@ -194,7 +209,7 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         setCategories(prev => prev.map(c => c.id === id ? { ...c, is_expanded: !c.is_expanded } : c));
     };
 
-    const moveCategory = (id: string, newParentId: string | null, newIndex: number) => {
+    const moveCategory = (id: string, newParentId: string | null, _newIndex: number) => {
         setCategories(prev => prev.map(c => c.id === id ? { ...c, parent_id: newParentId } : c));
         // Re-sort logic would go here in a real backend
     };
@@ -243,14 +258,49 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         return buildTree();
     }, [categories]);
 
+    const exportData = () => {
+        const data = {
+            workspaces,
+            prompts,
+            categories,
+            user
+        };
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `promptmaster-backup-${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    };
+
+    const importData = (jsonData: string) => {
+        try {
+            const data = JSON.parse(jsonData);
+            if (data.prompts) setPrompts(data.prompts);
+            if (data.categories) setCategories(data.categories);
+            if (data.workspaces) setWorkspaces(data.workspaces);
+            // User data usually shouldn't be fully overwritten on import if logic is "restore content", 
+            // but for full backup restore, we might want to.
+            // keeping user separate for now unless specifically requested.
+            alert('Dados importados com sucesso!');
+        } catch (e) {
+            console.error('Falha ao importar dados:', e);
+            alert('Erro ao importar arquivo. Verifique se o formato é válido.');
+        }
+    };
+
     return (
         <StoreContext.Provider value={{
-            user, workspaces, prompts, categories, activeWorkspaceId, isLoading, currentView, plans,
+            user, workspaces, prompts, categories, activeWorkspaceId, isLoading, currentView, plans, searchQuery,
             login, logout, completeOnboarding,
             addPrompt, updatePrompt, deletePrompt, toggleFavorite, incrementCopyCount, movePrompt, reorderPrompts,
             addCategory, updateCategory, deleteCategory, toggleCategoryExpand, moveCategory,
-            setActiveWorkspaceId, addWorkspace, updateWorkspace, deleteWorkspace, setCurrentView,
-            categoryTree
+            setActiveWorkspaceId, addWorkspace, updateWorkspace, deleteWorkspace, setCurrentView, setSearchQuery,
+            categoryTree,
+            exportData, importData
         }}>
             {children}
         </StoreContext.Provider>

@@ -10,7 +10,7 @@ interface CreatePromptModalProps {
 }
 
 export function CreatePromptModal({ onClose }: CreatePromptModalProps) {
-    const { addPrompt } = useStore();
+    const { addPrompt, activeWorkspaceId } = useStore();
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
     const [selectedVariables, setSelectedVariables] = useState<SelectedVariable[]>([]);
@@ -62,7 +62,7 @@ export function CreatePromptModal({ onClose }: CreatePromptModalProps) {
             content,
             variables: finalVariables,
             tags: [], // TODO: Tag input
-            workspace_id: 'default', // Should get active workspace
+            workspace_id: activeWorkspaceId,
             is_favorite: false
         });
         onClose();

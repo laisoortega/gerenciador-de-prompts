@@ -1,8 +1,8 @@
 import { useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { X, Mail, Link2, Copy, Check, Trash2, ChevronDown, UserPlus, Users } from 'lucide-react';
+import { X, Mail, Copy, Check, Users, UserPlus, Trash2 } from 'lucide-react';
 import { Modal } from './ui/Modal';
-import { Prompt, PromptShare } from '../types';
+import { Prompt } from '../types';
 import { fetchPromptShares, sharePrompt, revokeShare, updateSharePermission } from '../services/api';
 
 interface SharePromptModalProps {
@@ -26,7 +26,7 @@ export function SharePromptModal({ prompt, onClose }: SharePromptModalProps) {
     const queryClient = useQueryClient();
 
     // Buscar compartilhamentos existentes
-    const { data: shares, isLoading } = useQuery({
+    const { data: shares } = useQuery({
         queryKey: ['prompt-shares', prompt.id],
         queryFn: () => fetchPromptShares(prompt.id),
     });

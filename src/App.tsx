@@ -7,7 +7,14 @@ import { Login } from './pages/Login';
 import { Dashboard } from './pages/Dashboard';
 import { Onboarding } from './pages/Onboarding';
 import { AppLayout } from './layouts/AppLayout';
+import { AdminLayout } from './layouts/AdminLayout';
 import SharedWithMePage from './pages/SharedWithMe';
+import { AdminDashboard } from './pages/admin/AdminDashboard';
+import { UserManagement } from './pages/admin/UserManagement';
+import { PlanManagement } from './pages/admin/PlanManagement';
+import { Settings } from './pages/Settings';
+import { Subscription } from './pages/Subscription';
+import { Notifications } from './pages/Notifications';
 
 const queryClient = new QueryClient();
 
@@ -35,7 +42,19 @@ const AppRoutes: React.FC = () => {
             <Route element={<AppLayout />}>
                 <Route path="/" element={<Dashboard />} />
                 <Route path="/shared-with-me" element={<SharedWithMePage />} />
+                <Route path="/settings" element={<Settings />} />
+                <Route path="/subscription" element={<Subscription />} />
+                <Route path="/notifications" element={<Notifications />} />
             </Route>
+
+            {/* Admin Routes */}
+            <Route path="/admin" element={user.role === 'admin' ? <AdminLayout /> : <Navigate to="/" />}>
+                <Route index element={<AdminDashboard />} />
+                <Route path="users" element={<UserManagement />} />
+                <Route path="plans" element={<PlanManagement />} />
+                <Route path="settings" element={<div>Configurações (Em breve)</div>} />
+            </Route>
+
             <Route path="*" element={<Navigate to="/" />} />
         </Routes>
     );

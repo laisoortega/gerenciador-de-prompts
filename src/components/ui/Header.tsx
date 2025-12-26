@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
-import { Search, Plus, Bell, Video, Sparkles } from 'lucide-react';
+import { Search, Plus, Bell, Sparkles } from 'lucide-react';
 import { useStore } from '../../contexts/StoreContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { Moon, Sun } from 'lucide-react';
 import { VideoAnalysisModal } from '../VideoAnalysisModal';
+import { Link } from 'react-router-dom';
 
 export const Header: React.FC = () => {
     const { setTheme, theme } = useTheme();
-    const { activeWorkspaceId, workspaces } = useStore();
+    const { activeWorkspaceId, workspaces, searchQuery, setSearchQuery } = useStore();
     const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
 
     const currentWorkspace = workspaces.find(w => w.id === activeWorkspaceId);
@@ -22,7 +23,9 @@ export const Header: React.FC = () => {
                     <input
                         type="text"
                         placeholder="Buscar prompts (Ctrl+K)..."
-                        className="w-full bg-bg-elevated border-none rounded-lg pl-10 pr-4 py-2 text-sm text-text-primary focus:ring-1 focus:ring-primary-500"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="w-full bg-bg-elevated border-none rounded-lg pl-10 pr-4 py-2 text-sm text-text-primary focus:ring-1 focus:ring-primary-500 placeholder-text-muted"
                     />
                 </div>
             </div>
@@ -45,10 +48,10 @@ export const Header: React.FC = () => {
                     {theme === 'dark' ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
                 </button>
 
-                <button className="p-2 text-text-secondary hover:text-text-primary hover:bg-bg-hover rounded-lg relative">
+                <Link to="/notifications" className="p-2 text-text-secondary hover:text-text-primary hover:bg-bg-hover rounded-lg relative">
                     <Bell className="w-5 h-5" />
                     <span className="absolute top-2 right-2 w-2 h-2 bg-error-500 rounded-full"></span>
-                </button>
+                </Link>
 
                 <button className="btn-primary flex items-center gap-2">
                     <Plus className="w-4 h-4" />

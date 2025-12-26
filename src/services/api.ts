@@ -1,5 +1,5 @@
 import { PromptShare, SharedPrompt, CommonVariable, VideoAnalysis, Prompt } from '../types';
-import { INITIAL_PROMPTS } from './mockData';
+import { MOCK_PROMPTS } from './mockData';
 
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -65,7 +65,7 @@ export const fetchSharedWithMe = async (params: { status?: string, search?: stri
                 message: 'Acho que você vai gostar deste prompt para SEO.'
             },
             prompt: {
-                ...INITIAL_PROMPTS[0],
+                ...MOCK_PROMPTS[0],
                 id: 'p-external-1',
                 title: 'SEO Master Blaster (Compartilhado)',
                 user_id: 'user-external'
@@ -87,7 +87,7 @@ export const fetchSharedWithMe = async (params: { status?: string, search?: stri
                 message: 'Por favor revise este prompt de vendas.'
             },
             prompt: {
-                ...INITIAL_PROMPTS[1],
+                ...MOCK_PROMPTS[1],
                 id: 'p-external-2',
                 title: 'Script de Vendas Enterprise',
                 user_id: 'user-boss'
@@ -118,7 +118,7 @@ export const respondToShare = async (shareId: string, action: 'accept' | 'declin
 export const copySharedPrompt = async (shareId: string, data: any): Promise<Prompt> => {
     await delay(1000);
     return {
-        ...INITIAL_PROMPTS[0],
+        ...MOCK_PROMPTS[0],
         id: `p-new-${Date.now()}`,
         title: data.new_title || 'Cópia de Prompt',
         category_id: data.category_id
@@ -145,7 +145,7 @@ export const analyzeVideo = async (url: string) => {
     await delay(3000); // Simulate processing time
 
     // Determine platform for mock data
-    const platform = url.includes('youtube') ? 'youtube' : url.includes('instagram') ? 'instagram' : 'tiktok';
+    const _platform = url.includes('youtube') ? 'youtube' : url.includes('instagram') ? 'instagram' : 'tiktok';
 
     // Mock success
     return {
@@ -194,7 +194,7 @@ export const fetchAnalysisStatus = async (id: string): Promise<VideoAnalysis> =>
 export const createPromptFromAnalysis = async (analysisId: string, data: any): Promise<Prompt> => {
     await delay(1000);
     return {
-        ...INITIAL_PROMPTS[0],
+        ...MOCK_PROMPTS[0],
         id: `p-video-${Date.now()}`,
         title: data.title,
         content: data.content,
