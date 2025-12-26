@@ -8,7 +8,7 @@ import { Link } from 'react-router-dom';
 
 export const Header: React.FC = () => {
     const { setTheme, theme } = useTheme();
-    const { activeWorkspaceId, workspaces, searchQuery, setSearchQuery } = useStore();
+    const { activeWorkspaceId, workspaces, searchQuery, setSearchQuery, setCreatePromptModalOpen } = useStore();
     const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
 
     const currentWorkspace = workspaces.find(w => w.id === activeWorkspaceId);
@@ -53,7 +53,10 @@ export const Header: React.FC = () => {
                     <span className="absolute top-2 right-2 w-2 h-2 bg-error-500 rounded-full"></span>
                 </Link>
 
-                <button className="btn-primary flex items-center gap-2">
+                <button
+                    onClick={() => setCreatePromptModalOpen(true)}
+                    className="btn-primary flex items-center gap-2"
+                >
                     <Plus className="w-4 h-4" />
                     <span className="hidden sm:inline">Novo Prompt</span>
                 </button>

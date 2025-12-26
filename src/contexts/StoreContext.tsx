@@ -43,6 +43,10 @@ interface StoreContextType {
     setCurrentView: (view: ViewType) => void;
     searchQuery: string;
     setSearchQuery: (query: string) => void;
+    isCreatePromptModalOpen: boolean;
+    setCreatePromptModalOpen: (isOpen: boolean) => void;
+    isCreateCategoryModalOpen: boolean;
+    setCreateCategoryModalOpen: (isOpen: boolean) => void;
 
     // Data Management
     exportData: () => void;
@@ -64,6 +68,8 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     const [activeWorkspaceId, setActiveWorkspaceId] = useState<string>('');
     const [isLoading, setIsLoading] = useState(true);
     const [currentView, setCurrentView] = useState<ViewType>('cards');
+    const [isCreatePromptModalOpen, setCreatePromptModalOpen] = useState(false);
+    const [isCreateCategoryModalOpen, setCreateCategoryModalOpen] = useState(false);
 
     useEffect(() => {
         // Simular carregamento inicial
@@ -299,6 +305,7 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
             addPrompt, updatePrompt, deletePrompt, toggleFavorite, incrementCopyCount, movePrompt, reorderPrompts,
             addCategory, updateCategory, deleteCategory, toggleCategoryExpand, moveCategory,
             setActiveWorkspaceId, addWorkspace, updateWorkspace, deleteWorkspace, setCurrentView, setSearchQuery,
+            isCreatePromptModalOpen, setCreatePromptModalOpen, isCreateCategoryModalOpen, setCreateCategoryModalOpen,
             categoryTree,
             exportData, importData
         }}>

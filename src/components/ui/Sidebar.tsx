@@ -7,7 +7,7 @@ import { fetchSharedWithMe } from '../../services/api';
 import { CategoryTree } from '../sidebar/CategoryTree';
 
 export const Sidebar: React.FC = () => {
-    const { categoryTree, currentView, setCurrentView, logout, user, toggleCategoryExpand, moveCategory } = useStore();
+    const { categoryTree, currentView, setCurrentView, logout, user, toggleCategoryExpand, moveCategory, setCreateCategoryModalOpen } = useStore();
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -89,7 +89,12 @@ export const Sidebar: React.FC = () => {
             <div className="flex-1 overflow-y-auto p-3">
                 <div className="flex items-center justify-between px-2 mb-2">
                     <p className="text-xs font-semibold text-text-muted uppercase tracking-wider">Categorias</p>
-                    <button className="text-text-muted hover:text-primary-500"><Plus className="w-4 h-4" /></button>
+                    <button
+                        onClick={() => setCreateCategoryModalOpen(true)}
+                        className="text-text-muted hover:text-primary-500"
+                    >
+                        <Plus className="w-4 h-4" />
+                    </button>
                 </div>
                 <CategoryTree
                     categories={categoryTree}

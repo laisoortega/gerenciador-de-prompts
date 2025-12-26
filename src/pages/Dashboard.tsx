@@ -10,8 +10,8 @@ import { KanbanView } from '../components/views/KanbanView';
 import { FoldersView } from '../components/views/FoldersView';
 
 export const Dashboard: React.FC = () => {
-    const { prompts, currentView, categories, movePrompt, searchQuery } = useStore();
-    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const { prompts, currentView, categories, movePrompt, searchQuery, setCreatePromptModalOpen } = useStore();
+    // Local create modal state removed
     const [sharingPrompt, setSharingPrompt] = useState<Prompt | null>(null);
 
     const filteredPrompts = prompts.filter(p =>
@@ -25,7 +25,7 @@ export const Dashboard: React.FC = () => {
             <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-bold text-text-primary">Meus Prompts</h2>
                 <button
-                    onClick={() => setIsCreateModalOpen(true)}
+                    onClick={() => setCreatePromptModalOpen(true)}
                     className="btn-primary flex items-center gap-2"
                 >
                     <Plus className="w-5 h-5" /> Novo Prompt
@@ -41,7 +41,7 @@ export const Dashboard: React.FC = () => {
                     <h3 className="text-xl font-bold text-text-primary">Nenhum prompt encontrado</h3>
                     <p className="text-text-secondary mt-2 mb-6">Crie seu primeiro prompt para começar a usar o sistema.</p>
                     <button
-                        onClick={() => setIsCreateModalOpen(true)}
+                        onClick={() => setCreatePromptModalOpen(true)}
                         className="btn-primary"
                     >
                         Criar Primeiro Prompt
@@ -68,10 +68,7 @@ export const Dashboard: React.FC = () => {
                 </>
             )}
 
-            {isCreateModalOpen && (
-                <CreatePromptModal onClose={() => setIsCreateModalOpen(false)} />
-            )}
-
+            {/* Modal de criação movido para AppLayout para ser global */}
             {sharingPrompt && (
                 <SharePromptModal prompt={sharingPrompt} onClose={() => setSharingPrompt(null)} />
             )}
