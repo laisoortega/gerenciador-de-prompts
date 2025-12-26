@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { Play, Loader, FileText, Check, AlertCircle, Sparkles, Youtube, Instagram, Video } from 'lucide-react';
+import { Loader, FileText, AlertCircle, Sparkles, Youtube, Instagram, Video, Plus } from 'lucide-react';
 import { analyzeVideo, fetchAnalysisStatus, createPromptFromAnalysis } from '../services/api';
-import { VideoAnalysis, GeneratedPrompt } from '../types';
+import { GeneratedPrompt } from '../types';
 
 interface VideoAnalyzerProps {
     onClose: () => void;
@@ -23,7 +23,7 @@ export function VideoAnalyzer({ onClose }: VideoAnalyzerProps) {
     });
 
     // Query para verificar status (polling)
-    const { data: analysis, error } = useQuery({
+    const { data: analysis } = useQuery({
         queryKey: ['video-analysis', analysisId],
         queryFn: () => fetchAnalysisStatus(analysisId!),
         enabled: !!analysisId && polling,
@@ -119,7 +119,7 @@ export function VideoAnalyzer({ onClose }: VideoAnalyzerProps) {
 
             {/* Erro */}
             {analysis?.status === 'error' && (
-                <div className="bg-error-500/10 border border-error-500/20 rounded-lg p-4 text-center">
+                <div className="bg-[#ef44441a] border border-[#ef444433] rounded-lg p-4 text-center">
                     <AlertCircle className="w-8 h-8 text-error-500 mx-auto mb-2" />
                     <p className="text-error-500 font-medium">Falha na análise</p>
                     <p className="text-sm text-text-muted mt-1">
@@ -138,28 +138,30 @@ export function VideoAnalyzer({ onClose }: VideoAnalyzerProps) {
             {analysis?.status === 'completed' && analysis.result && (
                 <div className="space-y-6">
                     {/* Info do Vídeo */}
-                    <div className="flex gap-4 p-4 bg-bg-elevated rounded-lg">
-                        {analysis.video_info.thumbnail_url && (
-                            <img
-                                src={analysis.video_info.thumbnail_url}
-                                alt="Thumbnail"
-                                className="w-24 h-16 object-cover rounded"
-                            />
-                        )}
-                        <div>
-                            <h4 className="font-semibold text-text-primary line-clamp-1">
-                                {analysis.video_info.title}
-                            </h4>
-                            <div className="flex items-center gap-2 mt-1">
-                                <span className="text-xs px-2 py-0.5 bg-bg-surface rounded text-text-muted">
-                                    {analysis.video_info.duration}s
-                                </span>
-                                <span className="text-xs text-text-muted">
-                                    {analysis.video_info.author}
-                                </span>
+                    {analysis.video_info && (
+                        <div className="flex gap-4 p-4 bg-bg-elevated rounded-lg">
+                            {analysis.video_info.thumbnail_url && (
+                                <img
+                                    src={analysis.video_info.thumbnail_url}
+                                    alt="Thumbnail"
+                                    className="w-24 h-16 object-cover rounded"
+                                />
+                            )}
+                            <div>
+                                <h4 className="font-semibold text-text-primary line-clamp-1">
+                                    {analysis.video_info.title}
+                                </h4>
+                                <div className="flex items-center gap-2 mt-1">
+                                    <span className="text-xs px-2 py-0.5 bg-bg-surface rounded text-text-muted">
+                                        {analysis.video_info.duration}s
+                                    </span>
+                                    <span className="text-xs text-text-muted">
+                                        {analysis.video_info.author}
+                                    </span>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    )}
 
                     {/* Transcrição (Expandable placeholder) */}
                     <div className="border border-border-subtle rounded-lg p-4">
@@ -180,7 +182,7 @@ export function VideoAnalyzer({ onClose }: VideoAnalyzerProps) {
                         </h4>
                         <div className="space-y-3">
                             {analysis.result.generated_prompts.map((prompt, index) => (
-                                <div key={index} className="bg-bg-elevated border border-border-subtle rounded-lg p-4 hover:border-primary-500/30 transition-colors">
+                                <div key={index} className="bg-bg-elevated border border-border-subtle rounded-lg p-4 hover:border-[#3b82f64d] transition-colors">
                                     <div className="flex justify-between items-start mb-2">
                                         <h5 className="font-medium text-text-primary">{prompt.title}</h5>
                                         <span className="text-xs bg-bg-surface px-2 py-1 rounded text-text-muted">

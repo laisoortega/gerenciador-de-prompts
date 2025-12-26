@@ -85,7 +85,7 @@
   }
 
   .btn-danger {
-    @apply px-4 py-2 bg-error-500/10 text-error-500 hover:bg-error-500/20 rounded-lg font-medium transition-colors disabled:opacity-50;
+    @apply px-4 py-2 bg-[#ef44441a] text-error-500 hover:bg-[#ef444433] rounded-lg font-medium transition-colors disabled:opacity-50;
   }
 
   .input-primary {
@@ -98,5 +98,11 @@
 }
 
 body {
-  @apply bg-bg-base text-text-primary font-sans antialiased selection:bg-primary-500/30;
+  @apply bg-bg-base text-text-primary font-sans antialiased;
+}
+
+::selection {
+  background-color: rgba(59, 130, 246, 0.3);
+  /* primary-500/30 */
+  color: #fff;
 }

@@ -9,9 +9,9 @@ import { Plus, Share2, Copy } from 'lucide-react';
 const CardsView = ({ prompts, onShare }: { prompts: Prompt[]; onShare: (prompt: Prompt) => void }) => (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {prompts.map(prompt => (
-            <div key={prompt.id} className="bg-bg-surface border border-border-subtle rounded-xl p-5 hover:border-primary-500/50 hover:shadow-glow transition-all group cursor-pointer">
+            <div key={prompt.id} className="bg-bg-surface border border-border-subtle rounded-xl p-5 hover:border-[#3b82f680] hover:shadow-glow transition-all group cursor-pointer">
                 <div className="flex justify-between items-start mb-3">
-                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium bg-primary-500/10 text-primary-500`}>
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium bg-[#3b82f61a] text-primary-500`}>
                         {prompt.category_id || 'Geral'}
                     </span>
                     {prompt.is_favorite && <span className="text-accent-500">★</span>}

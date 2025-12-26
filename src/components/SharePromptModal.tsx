@@ -107,7 +107,7 @@ export function SharePromptModal({ prompt, onClose }: SharePromptModalProps) {
         <Modal size="lg" onClose={onClose}>
             <Modal.Header>
                 <div className="flex items-center gap-3">
-                    <div className="p-2 bg-primary-500/10 rounded-lg">
+                    <div className="p-2 bg-[#3b82f61a] rounded-lg">
                         <Users className="w-5 h-5 text-primary-500" />
                     </div>
                     <div>
@@ -273,7 +273,7 @@ export function SharePromptModal({ prompt, onClose }: SharePromptModalProps) {
                                     className="flex items-center justify-between p-3 bg-bg-elevated rounded-lg"
                                 >
                                     <div className="flex items-center gap-3">
-                                        <div className="w-8 h-8 rounded-full bg-primary-500/20 flex items-center justify-center">
+                                        <div className="w-8 h-8 rounded-full bg-[#3b82f633] flex items-center justify-center">
                                             <span className="text-sm font-medium text-primary-500">
                                                 {share.shared_with_user?.name?.[0] || share.shared_with_email[0].toUpperCase()}
                                             </span>
@@ -309,7 +309,7 @@ export function SharePromptModal({ prompt, onClose }: SharePromptModalProps) {
                                         {/* Botão Remover */}
                                         <button
                                             onClick={() => revokeMutation.mutate(share.id)}
-                                            className="p-1.5 text-text-muted hover:text-error-500 hover:bg-error-500/10 rounded"
+                                            className="p-1.5 text-text-muted hover:text-error-500 hover:bg-[#ef44441a] rounded"
                                             title="Remover acesso"
                                         >
                                             <Trash2 className="w-4 h-4" />

@@ -11,7 +11,7 @@ export function VideoAnalysisModal({ onClose }: VideoAnalysisModalProps) {
         <Modal size="lg" onClose={onClose}>
             <Modal.Header>
                 <div className="flex items-center gap-3">
-                    <div className="p-2 bg-primary-500/10 rounded-lg">
+                    <div className="p-2 bg-[#3b82f61a] rounded-lg">
                         <Video className="w-5 h-5 text-primary-500" />
                     </div>
                     <div>

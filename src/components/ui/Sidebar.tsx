@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { useStore } from '../contexts/StoreContext';
+import { useStore } from '../../contexts/StoreContext';
 import { ChevronRight, ChevronDown, Folder, Plus, Settings, LogOut, LayoutGrid, LayoutList, Kanban, FolderTree, Share2 } from 'lucide-react';
-import { Category } from '../types';
-import { fetchSharedWithMe } from '../services/api';
+import { Category } from '../../types';
+import { fetchSharedWithMe } from '../../services/api';
 
 export const Sidebar: React.FC = () => {
     const { categoryTree, currentView, setCurrentView, logout, user } = useStore();
@@ -74,25 +74,25 @@ export const Sidebar: React.FC = () => {
                 <div className="space-y-1">
                     <button
                         onClick={() => handleViewChange('cards')}
-                        className={`w-full flex items-center gap-3 px-2 py-2 rounded-md text-sm ${location.pathname === '/' && currentView === 'cards' ? 'bg-primary-500/10 text-primary-500' : 'text-text-secondary hover:bg-bg-hover'}`}
+                        className={`w-full flex items-center gap-3 px-2 py-2 rounded-md text-sm ${location.pathname === '/' && currentView === 'cards' ? 'bg-[#3b82f61a] text-primary-500' : 'text-text-secondary hover:bg-bg-hover'}`}
                     >
                         <LayoutGrid className="w-4 h-4" /> Cards
                     </button>
                     <button
                         onClick={() => handleViewChange('table')}
-                        className={`w-full flex items-center gap-3 px-2 py-2 rounded-md text-sm ${location.pathname === '/' && currentView === 'table' ? 'bg-primary-500/10 text-primary-500' : 'text-text-secondary hover:bg-bg-hover'}`}
+                        className={`w-full flex items-center gap-3 px-2 py-2 rounded-md text-sm ${location.pathname === '/' && currentView === 'table' ? 'bg-[#3b82f61a] text-primary-500' : 'text-text-secondary hover:bg-bg-hover'}`}
                     >
                         <LayoutList className="w-4 h-4" /> Tabela
                     </button>
                     <button
                         onClick={() => handleViewChange('kanban')}
-                        className={`w-full flex items-center gap-3 px-2 py-2 rounded-md text-sm ${location.pathname === '/' && currentView === 'kanban' ? 'bg-primary-500/10 text-primary-500' : 'text-text-secondary hover:bg-bg-hover'}`}
+                        className={`w-full flex items-center gap-3 px-2 py-2 rounded-md text-sm ${location.pathname === '/' && currentView === 'kanban' ? 'bg-[#3b82f61a] text-primary-500' : 'text-text-secondary hover:bg-bg-hover'}`}
                     >
                         <Kanban className="w-4 h-4" /> Kanban
                     </button>
                     <button
                         onClick={() => handleViewChange('folders')}
-                        className={`w-full flex items-center gap-3 px-2 py-2 rounded-md text-sm ${location.pathname === '/' && currentView === 'folders' ? 'bg-primary-500/10 text-primary-500' : 'text-text-secondary hover:bg-bg-hover'}`}
+                        className={`w-full flex items-center gap-3 px-2 py-2 rounded-md text-sm ${location.pathname === '/' && currentView === 'folders' ? 'bg-[#3b82f61a] text-primary-500' : 'text-text-secondary hover:bg-bg-hover'}`}
                     >
                         <FolderTree className="w-4 h-4" /> Pastas
                     </button>
@@ -103,7 +103,7 @@ export const Sidebar: React.FC = () => {
             <div className="p-3 border-b border-border-subtle">
                 <button
                     onClick={() => navigate('/shared-with-me')}
-                    className={`w-full flex items-center justify-between px-2 py-2 rounded-md text-sm ${location.pathname === '/shared-with-me' ? 'bg-primary-500/10 text-primary-500' : 'text-text-secondary hover:bg-bg-hover'}`}
+                    className={`w-full flex items-center justify-between px-2 py-2 rounded-md text-sm ${location.pathname === '/shared-with-me' ? 'bg-[#3b82f61a] text-primary-500' : 'text-text-secondary hover:bg-bg-hover'}`}
                 >
                     <div className="flex items-center gap-3">
                         <Share2 className="w-4 h-4" /> Compartilhados comigo
@@ -144,7 +144,7 @@ export const Sidebar: React.FC = () => {
                     <button className="flex-1 flex items-center justify-center gap-2 py-1.5 rounded-md border border-border-default text-xs font-medium text-text-secondary hover:bg-bg-hover transition-colors">
                         <Settings className="w-3 h-3" /> Config
                     </button>
-                    <button onClick={logout} className="flex-1 flex items-center justify-center gap-2 py-1.5 rounded-md border border-border-default text-xs font-medium text-text-secondary hover:bg-error-500/10 hover:text-error-500 transition-colors">
+                    <button onClick={logout} className="flex-1 flex items-center justify-center gap-2 py-1.5 rounded-md border border-border-default text-xs font-medium text-text-secondary hover:bg-[#ef44441a] hover:text-error-500 transition-colors">
                         <LogOut className="w-3 h-3" /> Sair
                     </button>
                 </div>

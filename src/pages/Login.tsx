@@ -13,7 +13,7 @@ export const Login: React.FC = () => {
     return (
         <div className="min-h-screen bg-bg-base flex flex-col items-center justify-center p-4">
             <div className="mb-8 text-center">
-                <div className="w-16 h-16 bg-gradient-to-tr from-primary-600 to-primary-400 rounded-2xl flex items-center justify-center text-white text-3xl font-bold shadow-2xl shadow-primary-500/20 mx-auto mb-4">
+                <div className="w-16 h-16 bg-gradient-to-tr from-primary-600 to-primary-400 rounded-2xl flex items-center justify-center text-white text-3xl font-bold shadow-2xl shadow-[#3b82f633] mx-auto mb-4">
                     P
                 </div>
                 <h1 className="text-3xl font-bold text-text-primary">PromptMaster</h1>
@@ -44,7 +44,7 @@ export const Login: React.FC = () => {
 
                 <div className="mt-6 text-center text-xs text-text-muted">
                     <p>Ao continuar, você concorda com nossos Termos de Uso.</p>
-                    <p className="mt-2 text-primary-500/50">Dica: Use 'admin@teste.com' para acesso total.</p>
+                    <p className="mt-2 text-[#3b82f680]">Dica: Use 'admin@teste.com' para acesso total.</p>
                 </div>
             </div>
         </div>

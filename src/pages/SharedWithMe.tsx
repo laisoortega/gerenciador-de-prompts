@@ -50,7 +50,7 @@ export default function SharedWithMePage() {
                     >
                         Ativos
                         {data?.activeCount !== undefined && data.activeCount > 0 && (
-                            <span className="ml-2 px-2 py-0.5 bg-primary-500/20 text-primary-500 rounded-full text-xs">
+                            <span className="ml-2 px-2 py-0.5 bg-[#3b82f633] text-primary-500 rounded-full text-xs">
                                 {data.activeCount}
                             </span>
                         )}

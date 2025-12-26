@@ -149,7 +149,7 @@ export const analyzeVideo = async (url: string) => {
 
     // Mock success
     return {
-        analysis_id: `analysis-${Date.now()}`,
+        id: `analysis-${Date.now()}`,
         status: 'processing'
     };
 };
@@ -163,26 +163,35 @@ export const fetchAnalysisStatus = async (id: string): Promise<VideoAnalysis> =>
         platform: 'youtube',
         video_url: 'https://youtube.com/watch?v=mock',
         status: 'completed',
-        video_metadata: {
+        video_info: {
             title: 'Como Fazer Roteiros Virais em 2024',
             description: 'Neste vídeo explico a técnica...',
-            channel_name: 'Creator Pro',
+            author: 'Creator Pro',
             view_count: 154000,
             thumbnail_url: 'https://picsum.photos/300/200'
         },
-        analysis: {
-            hook: { text: '"Você está perdendo dinheiro por não usar esta técnica!"', type: 'polêmica' },
-            structure: 'problema-solução',
-            tone: 'educativo',
-            cta: { text: 'Clique no link da bio' },
-            engagement_techniques: ['padrao de interrupcao', 'loop aberto']
+        result: {
+            summary: 'O vídeo explica uma técnica de 3 passos para roteiros: Gancho polêmico, Conteúdo estruturado e CTA forte.',
+            generated_prompts: [
+                {
+                    title: 'Roteiro Viral Curto',
+                    content: 'Crie um roteiro de curto com gancho polêmico sobre [Tópico].',
+                    category: 'Social Media',
+                    variables: ['Tópico']
+                },
+                {
+                    title: 'Script Educativo',
+                    content: 'Explique [Tema] usando metodo de 3 passos.',
+                    category: 'Education',
+                    variables: ['Tema']
+                }
+            ]
         },
-        generated_prompt_template: 'Crie um roteiro de vídeo curto para [Plataforma] com tom [Tom].\n\nComece com o gancho: "{{hook}}".\n\nEstruture o conteúdo como {{structure}}.\n\nTermine com o CTA: "{{cta}}".',
         created_at: new Date().toISOString()
     };
 };
 
-export const createPromptFromAnalysis = async (data: any): Promise<Prompt> => {
+export const createPromptFromAnalysis = async (analysisId: string, data: any): Promise<Prompt> => {
     await delay(1000);
     return {
         ...INITIAL_PROMPTS[0],

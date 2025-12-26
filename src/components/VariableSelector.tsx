@@ -115,7 +115,7 @@ export function VariableSelector({
               flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap
               transition-colors
               ${activeCategory === cat.key
-                                ? 'bg-primary-500/10 text-primary-500 border border-primary-500/20'
+                                ? 'bg-[#3b82f61a] text-primary-500 border border-[#3b82f633]'
                                 : 'bg-bg-elevated text-text-secondary hover:bg-bg-hover'
                             }
             `}
@@ -143,7 +143,7 @@ export function VariableSelector({
                             className={`
                 flex items-start gap-3 p-3 rounded-lg text-left transition-all
                 ${isSelected
-                                    ? 'bg-primary-500/10 border border-primary-500/30'
+                                    ? 'bg-[#3b82f61a] border border-[#3b82f64d]'
                                     : 'bg-bg-elevated border border-transparent hover:border-border-default'
                                 }
               `}
@@ -164,7 +164,9 @@ export function VariableSelector({
                                 <div className="flex items-center gap-2">
                                     <span className="font-medium text-text-primary">{variable.label}</span>
                                     {variable.description && (
-                                        <HelpCircle className="w-3.5 h-3.5 text-text-muted" title={variable.description} />
+                                        <span title={variable.description} className="cursor-help">
+                                            <HelpCircle className="w-3.5 h-3.5 text-text-muted" />
+                                        </span>
                                     )}
                                 </div>
                                 <p className="text-xs text-text-muted mt-0.5">

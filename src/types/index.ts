@@ -141,14 +141,15 @@ export interface VideoAnalysis {
     platform: 'youtube' | 'instagram' | 'tiktok';
     video_url: string;
     video_id?: string;
-    status: 'pending' | 'processing' | 'completed' | 'failed';
+    status: 'pending' | 'processing' | 'completed' | 'failed' | 'error';
     error_message?: string;
-    video_metadata?: {
+    error?: string;
+    video_info?: {
         title: string;
         description?: string;
         duration?: number;
         thumbnail_url?: string;
-        channel_name?: string;
+        author?: string;
         view_count?: number;
         like_count?: number;
     };
@@ -165,6 +166,10 @@ export interface VideoAnalysis {
         };
         engagement_techniques?: string[];
     };
+    result?: {
+        summary: string;
+        generated_prompts: GeneratedPrompt[];
+    };
     generated_prompt_template?: string;
     created_at: string;
 }
@@ -172,6 +177,7 @@ export interface VideoAnalysis {
 export interface GeneratedPrompt {
     content: string;
     title: string;
+    category?: string;
     variables: string[];
     source_video?: {
         platform: string;

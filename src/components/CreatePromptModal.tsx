@@ -62,7 +62,8 @@ export function CreatePromptModal({ onClose }: CreatePromptModalProps) {
             content,
             variables: finalVariables,
             tags: [], // TODO: Tag input
-            workspace_id: 'default' // Should get active workspace
+            workspace_id: 'default', // Should get active workspace
+            is_favorite: false
         });
         onClose();
     };
@@ -114,12 +115,12 @@ export function CreatePromptModal({ onClose }: CreatePromptModalProps) {
                         </p>
                         <div className="flex flex-wrap gap-2">
                             {selectedVariables.map(({ variable }) => (
-                                <code key={variable.id} className="px-2 py-1 bg-primary-500/20 text-primary-400 rounded text-xs">
+                                <code key={variable.id} className="px-2 py-1 bg-[#3b82f633] text-primary-400 rounded text-xs">
                                     {`{{${variable.name}}}`}
                                 </code>
                             ))}
                             {customVariables.map((cv) => (
-                                <code key={cv.name} className="px-2 py-1 bg-accent-500/20 text-accent-400 rounded text-xs">
+                                <code key={cv.name} className="px-2 py-1 bg-[#f59e0b33] text-accent-400 rounded text-xs">
                                     {`{{${cv.name}}}`}
                                 </code>
                             ))}
