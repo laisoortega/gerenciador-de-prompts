@@ -1,3 +1,7 @@
+import React from 'react';
+import { Outlet } from 'react-router-dom';
+import { Sidebar } from '../components/ui/Sidebar';
+import { Header } from '../components/ui/Header';
 import { MobileBottomNav } from '../components/ui/MobileBottomNav';
 
 export const AppLayout: React.FC = () => {
