@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useStore } from '../../contexts/StoreContext';
 import { useAuth } from '../../contexts/AuthContext';
-import { Plus, Settings, LogOut, LayoutGrid, LayoutList, Kanban, FolderTree, Share2, Inbox } from 'lucide-react';
+import { Plus, Settings, LogOut, LayoutGrid, LayoutList, Kanban, FolderTree, Share2, Inbox, Braces } from 'lucide-react';
 import { fetchSharedWithMe } from '../../services/api';
 import { SimpleCategoryList } from '../sidebar/SimpleCategoryList';
 import { Button } from './Button';
@@ -93,6 +93,17 @@ export const Sidebar: React.FC = () => {
                             {sharedCount}
                         </span>
                     )}
+                </Button>
+            </div>
+
+            {/* Variables Quick Access */}
+            <div className="p-3 border-b border-border-subtle">
+                <Button
+                    variant="ghost"
+                    onClick={() => navigate('/settings/variables')}
+                    className={`w-full justify-start gap-3 ${location.pathname === '/settings/variables' ? 'bg-primary-500/10 text-primary-500' : 'text-text-secondary'}`}
+                >
+                    <Braces className="w-4 h-4" /> Minhas Variáveis
                 </Button>
             </div>
 

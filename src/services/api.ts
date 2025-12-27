@@ -409,6 +409,107 @@ export const deleteCustomVariable = async (id: string): Promise<boolean> => {
     throw new Error('Database not configured');
 };
 
+// Default variables to seed for new users
+const DEFAULT_VARIABLES = [
+    // Copywriting
+    {
+        name: 'tom_de_voz', label: 'Tom de Voz', description: 'Personalidade da comunicação', type: 'select', category: 'copywriting', options: [
+            { value: 'profissional', label: 'Profissional' },
+            { value: 'casual', label: 'Casual/Conversacional' },
+            { value: 'empatico', label: 'Empático/Acolhedor' },
+            { value: 'persuasivo', label: 'Persuasivo/Vendas' },
+            { value: 'inspirador', label: 'Inspirador/Motivacional' }
+        ]
+    },
+    { name: 'publico_alvo', label: 'Público-Alvo', description: 'Quem é o destinatário da mensagem', type: 'text', category: 'copywriting', placeholder: 'Ex: Empreendedores digitais 25-45 anos' },
+    {
+        name: 'objetivo', label: 'Objetivo', description: 'O que a copy deve alcançar', type: 'select', category: 'copywriting', options: [
+            { value: 'vender', label: 'Vender/Converter' },
+            { value: 'leads', label: 'Capturar Leads' },
+            { value: 'engajar', label: 'Engajar/Interagir' },
+            { value: 'educar', label: 'Educar/Informar' }
+        ]
+    },
+    // Universal
+    { name: 'nome_marca', label: 'Nome da Marca', description: 'Nome da empresa/marca', type: 'text', category: 'universal', placeholder: 'Ex: PromptMaster' },
+    { name: 'produto', label: 'Produto/Serviço', description: 'O que está sendo oferecido', type: 'text', category: 'universal', placeholder: 'Ex: Curso de Marketing Digital' },
+    {
+        name: 'idioma', label: 'Idioma', description: 'Idioma do conteúdo', type: 'select', category: 'universal', options: [
+            { value: 'pt-br', label: 'Português (Brasil)' },
+            { value: 'en-us', label: 'Inglês (EUA)' },
+            { value: 'es', label: 'Espanhol' }
+        ]
+    },
+    // Imagens
+    {
+        name: 'estilo_visual', label: 'Estilo Visual', description: 'Define a estética visual geral', type: 'select', category: 'imagens', options: [
+            { value: 'fotografia_realista', label: 'Fotografia Realista' },
+            { value: 'ilustracao_digital', label: 'Ilustração Digital' },
+            { value: '3d_render', label: 'Renderização 3D' },
+            { value: 'minimalista', label: 'Minimalista' }
+        ]
+    },
+    {
+        name: 'proporcao', label: 'Proporção', description: 'Aspect ratio da imagem', type: 'select', category: 'imagens', options: [
+            { value: '1:1', label: '1:1 (Quadrado)' },
+            { value: '9:16', label: '9:16 (Stories/Reels)' },
+            { value: '16:9', label: '16:9 (Widescreen)' }
+        ]
+    },
+    // Videos
+    {
+        name: 'formato_video', label: 'Formato de Vídeo', description: 'Tipo/formato do vídeo', type: 'select', category: 'videos', options: [
+            { value: 'reels', label: 'Reels/TikTok' },
+            { value: 'youtube', label: 'YouTube' },
+            { value: 'stories', label: 'Stories' }
+        ]
+    },
+    {
+        name: 'duracao', label: 'Duração', description: 'Tempo do vídeo', type: 'select', category: 'videos', options: [
+            { value: '15s', label: '15 segundos' },
+            { value: '60s', label: '60 segundos' },
+            { value: '3min', label: '3 minutos' }
+        ]
+    }
+];
+
+export const seedDefaultVariables = async (userId: string): Promise<void> => {
+    if (!IS_REAL_DB || !supabase) return;
+
+    // Check if user already has variables (don't seed twice)
+    const { data: existing } = await supabase
+        .from('custom_variables')
+        .select('id')
+        .eq('user_id', userId)
+        .limit(1);
+
+    if (existing && existing.length > 0) {
+        return; // Already has variables, don't seed
+    }
+
+    // Insert default variables
+    const variablesToInsert = DEFAULT_VARIABLES.map((v, index) => ({
+        user_id: userId,
+        name: v.name,
+        label: v.label,
+        description: v.description,
+        type: v.type,
+        category: v.category,
+        options: JSON.stringify(v.options || []),
+        placeholder: v.placeholder || null,
+        order_index: index,
+        is_active: true
+    }));
+
+    const { error } = await supabase
+        .from('custom_variables')
+        .insert(variablesToInsert);
+
+    if (error) {
+        console.error('Error seeding default variables:', error);
+    }
+};
+
 // --- Video Analysis ---
 
 export const analyzeVideo = async (url: string) => {

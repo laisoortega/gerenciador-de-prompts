@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useMemo } from 'react';
 import { User, Workspace, Prompt, Category, ViewType, Plan } from '../types';
 import { INITIAL_USER, MOCK_WORKSPACES, MOCK_PROMPTS, MOCK_CATEGORIES, MOCK_PLANS } from '../services/mockData';
-import { fetchUserDefaultWorkspace } from '../services/api';
+import { fetchUserDefaultWorkspace, seedDefaultVariables } from '../services/api';
 import { usePromptsQuery } from '../hooks/usePromptsQuery';
 import { useCategoriesQuery } from '../hooks/useCategoriesQuery';
 import { useAuth } from './AuthContext';
@@ -118,6 +118,8 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
                     if (workspace) {
                         setActiveWorkspaceId(workspace.id);
                     }
+                    // Seed default variables for new users
+                    await seedDefaultVariables(authUser.id);
                 } catch (error) {
                     console.error('Error fetching workspace:', error);
                     // Fallback to mock
