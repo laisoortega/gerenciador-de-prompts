@@ -81,6 +81,14 @@ export function SettingsVariables() {
             .replace(/[^a-z0-9]+/g, '_')
             .replace(/^_|_$/g, '');
 
+        // Format category to snake_case
+        const categorySlug = formData.category
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .replace(/[^a-z0-9]+/g, '_')
+            .replace(/^_|_$/g, '') || 'custom';
+
         const data = {
             name: slug,
             label: formData.label,
@@ -88,7 +96,7 @@ export function SettingsVariables() {
             type: formData.type,
             options: formData.type !== 'text' ? formData.options : [],
             placeholder: formData.type === 'text' ? formData.placeholder : undefined,
-            category: formData.category || 'custom',
+            category: categorySlug,
             is_active: true
         };
 
@@ -273,7 +281,7 @@ export function SettingsVariables() {
                                 type="text"
                                 list="category-options"
                                 value={formData.category}
-                                onChange={(e) => setFormData({ ...formData, category: e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '_') })}
+                                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                                 className="w-full px-4 py-2.5 bg-bg-elevated border border-border-default rounded-xl text-text-primary placeholder-text-muted focus:border-primary-500 focus:ring-1 focus:ring-primary-500/30"
                                 placeholder="Ex: marketing, redes_sociais"
                             />
