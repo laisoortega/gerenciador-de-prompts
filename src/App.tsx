@@ -14,6 +14,7 @@ import { AdminDashboard } from './pages/admin/AdminDashboard';
 import { UserManagement } from './pages/admin/UserManagement';
 import { PlanManagement } from './pages/admin/PlanManagement';
 import { Settings } from './pages/Settings';
+import { SettingsVariables } from './pages/SettingsVariables';
 import { Subscription } from './pages/Subscription';
 import { Notifications } from './pages/Notifications';
 
@@ -63,6 +64,7 @@ const AppRoutes: React.FC = () => {
                 <Route path="/" element={<Dashboard />} />
                 <Route path="/shared-with-me" element={<SharedWithMePage />} />
                 <Route path="/settings" element={<Settings />} />
+                <Route path="/settings/variables" element={<SettingsVariables />} />
                 <Route path="/subscription" element={<Subscription />} />
                 <Route path="/notifications" element={<Notifications />} />
             </Route>

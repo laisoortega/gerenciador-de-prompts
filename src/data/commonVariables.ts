@@ -29,7 +29,7 @@ export const COMMON_VARIABLES: VariableCategory[] = [
     {
         id: 'copywriting',
         label: 'Copywriting',
-        icon: '✍️',
+        icon: 'pen-tool',
         color: '#3b82f6',
         variables: [
             {
@@ -99,7 +99,7 @@ export const COMMON_VARIABLES: VariableCategory[] = [
     {
         id: 'imagens',
         label: 'Imagens IA',
-        icon: '🎨',
+        icon: 'image',
         color: '#ec4899',
         variables: [
             {
@@ -164,7 +164,7 @@ export const COMMON_VARIABLES: VariableCategory[] = [
     {
         id: 'videos',
         label: 'Vídeos',
-        icon: '🎬',
+        icon: 'video',
         color: '#f59e0b',
         variables: [
             {
@@ -213,7 +213,7 @@ export const COMMON_VARIABLES: VariableCategory[] = [
     {
         id: 'universal',
         label: 'Universal',
-        icon: '🌐',
+        icon: 'globe',
         color: '#8b5cf6',
         variables: [
             {

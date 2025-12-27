@@ -321,6 +321,94 @@ export const fetchCommonVariables = async (): Promise<CommonVariable[]> => {
     ] as CommonVariable[];
 };
 
+// --- Custom Variables (User-defined) ---
+
+export interface CustomVariable {
+    id: string;
+    user_id: string;
+    name: string;
+    label: string;
+    description?: string;
+    type: 'text' | 'select' | 'multiselect';
+    options: { value: string; label: string }[];
+    placeholder?: string;
+    category: string;
+    order_index: number;
+    is_active: boolean;
+    created_at: string;
+    updated_at: string;
+}
+
+export const fetchCustomVariables = async (userId: string): Promise<CustomVariable[]> => {
+    if (IS_REAL_DB && supabase) {
+        const { data, error } = await supabase
+            .from('custom_variables')
+            .select('*')
+            .eq('user_id', userId)
+            .eq('is_active', true)
+            .order('order_index');
+        if (error) throw error;
+        return (data || []).map(v => ({
+            ...v,
+            options: typeof v.options === 'string' ? JSON.parse(v.options) : v.options || []
+        }));
+    }
+    return [];
+};
+
+export const createCustomVariable = async (data: Partial<CustomVariable>): Promise<CustomVariable> => {
+    if (IS_REAL_DB && supabase) {
+        const payload = {
+            ...data,
+            options: JSON.stringify(data.options || [])
+        };
+        const { data: result, error } = await supabase
+            .from('custom_variables')
+            .insert(payload)
+            .select()
+            .single();
+        if (error) throw error;
+        return {
+            ...result,
+            options: typeof result.options === 'string' ? JSON.parse(result.options) : result.options || []
+        };
+    }
+    throw new Error('Database not configured');
+};
+
+export const updateCustomVariable = async (id: string, updates: Partial<CustomVariable>): Promise<CustomVariable> => {
+    if (IS_REAL_DB && supabase) {
+        const payload = {
+            ...updates,
+            options: updates.options ? JSON.stringify(updates.options) : undefined
+        };
+        const { data: result, error } = await supabase
+            .from('custom_variables')
+            .update(payload)
+            .eq('id', id)
+            .select()
+            .single();
+        if (error) throw error;
+        return {
+            ...result,
+            options: typeof result.options === 'string' ? JSON.parse(result.options) : result.options || []
+        };
+    }
+    throw new Error('Database not configured');
+};
+
+export const deleteCustomVariable = async (id: string): Promise<boolean> => {
+    if (IS_REAL_DB && supabase) {
+        const { error } = await supabase
+            .from('custom_variables')
+            .delete()
+            .eq('id', id);
+        if (error) throw error;
+        return true;
+    }
+    throw new Error('Database not configured');
+};
+
 // --- Video Analysis ---
 
 export const analyzeVideo = async (url: string) => {

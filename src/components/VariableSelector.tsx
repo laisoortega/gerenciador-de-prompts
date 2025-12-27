@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Check, Plus, X, HelpCircle } from 'lucide-react';
+import { Check, Plus, X, HelpCircle, PenTool, Image, Video, Settings } from 'lucide-react';
 import { fetchCommonVariables } from '../services/api';
 import { CommonVariable } from '../types';
 
@@ -56,10 +56,10 @@ export function VariableSelector({
     }, [commonVariables]);
 
     const categories = [
-        { key: 'copy', label: 'Copywriting', icon: '✏️' },
-        { key: 'image', label: 'Imagens', icon: '🎨' },
-        { key: 'video', label: 'Vídeo/Roteiro', icon: '🎬' },
-        { key: 'general', label: 'Geral', icon: '⚙️' },
+        { key: 'copy', label: 'Copywriting', icon: PenTool },
+        { key: 'image', label: 'Imagens', icon: Image },
+        { key: 'video', label: 'Vídeo/Roteiro', icon: Video },
+        { key: 'general', label: 'Geral', icon: Settings },
     ];
 
     const isVariableSelected = (variableId: string) => {
@@ -120,7 +120,7 @@ export function VariableSelector({
                             }
             `}
                     >
-                        <span>{cat.icon}</span>
+                        <cat.icon className="w-4 h-4" />
                         <span>{cat.label}</span>
                         {variablesByCategory[cat.key] && (
                             <span className="text-xs opacity-60 ml-1">

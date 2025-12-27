@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useStore } from '../contexts/StoreContext';
 import { useTheme } from '../contexts/ThemeContext';
-import { User, Mail, Moon, Sun, Shield, LogOut } from 'lucide-react';
+import { User, Mail, Moon, Sun, Shield, LogOut, Variable, ChevronRight } from 'lucide-react';
 
 export const Settings: React.FC = () => {
+    const navigate = useNavigate();
     const { user, logout, exportData, importData } = useStore();
     const { theme, setTheme } = useTheme();
 
@@ -47,6 +49,25 @@ export const Settings: React.FC = () => {
                         </div>
                     </div>
                 </div>
+            </div>
+
+            {/* Custom Variables Section */}
+            <div className="bg-bg-surface border border-border-subtle rounded-xl p-6">
+                <h3 className="text-lg font-semibold text-text-primary mb-6 flex items-center gap-2">
+                    <Variable className="w-5 h-5 text-primary-500" />
+                    Minhas Variáveis
+                </h3>
+
+                <button
+                    onClick={() => navigate('/settings/variables')}
+                    className="w-full flex items-center justify-between p-4 bg-bg-elevated rounded-lg border border-border-default hover:border-primary-500/50 transition-colors group"
+                >
+                    <div className="text-left">
+                        <p className="font-medium text-text-primary">Gerenciar Variáveis Personalizadas</p>
+                        <p className="text-sm text-text-secondary">Crie variáveis reutilizáveis para seus prompts (ex: marca, público, produto)</p>
+                    </div>
+                    <ChevronRight className="w-5 h-5 text-text-muted group-hover:text-primary-500 transition-colors" />
+                </button>
             </div>
 
             {/* Preferences Section */}

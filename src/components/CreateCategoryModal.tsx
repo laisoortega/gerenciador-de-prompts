@@ -20,11 +20,10 @@ function getCategoryDepth(categoryId: string | null, categories: any[]): number 
 export function CreateCategoryModal({ onClose }: CreateCategoryModalProps) {
     const { addCategory, updateCategory, editingCategory, setEditingCategory, categories } = useStore();
     const [name, setName] = useState(editingCategory?.name || '');
-    const [icon, setIcon] = useState(editingCategory?.icon || '📁');
     const [color, setColor] = useState(editingCategory?.color || '#3b82f6');
     const [parentId, setParentId] = useState<string | null>(editingCategory?.parent_id || null);
 
-    // Only allow categories that would result in max 3 levels total
+    // Filter categories that can be parents (max 2 levels deep)
     const availableParents = categories.filter(c => {
         const depth = getCategoryDepth(c.id, categories);
         return depth < 2 && c.id !== editingCategory?.id; // Max 2 levels deep (so child = level 3)
@@ -39,14 +38,12 @@ export function CreateCategoryModal({ onClose }: CreateCategoryModalProps) {
         if (editingCategory) {
             updateCategory(editingCategory.id, {
                 name,
-                icon,
                 color,
                 parent_id: parentId
             });
         } else {
             addCategory({
                 name,
-                icon,
                 color,
                 parent_id: parentId
             });
@@ -54,8 +51,7 @@ export function CreateCategoryModal({ onClose }: CreateCategoryModalProps) {
         handleClose();
     };
 
-    const icons = ['📁', '📝', '💡', '🔥', '🚀', '💰', '🎯', '📢', '🤖', '🎓'];
-    const colors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#6366f1'];
+    const colors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#6366f1', '#14b8a6', '#f97316', '#64748b'];
 
     return (
         <Modal size="md" onClose={handleClose}>
@@ -80,36 +76,18 @@ export function CreateCategoryModal({ onClose }: CreateCategoryModalProps) {
                         <select
                             value={parentId || ''}
                             onChange={(e) => setParentId(e.target.value || null)}
-                            className="appearance-none w-full pl-3 pr-8 py-2.5 bg-bg-base border border-border-default rounded-xl text-sm text-text-primary hover:border-primary-500 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-all cursor-pointer"
+                            className="w-full bg-bg-elevated border border-border-default rounded-xl px-4 py-2.5 text-text-primary appearance-none cursor-pointer focus:ring-1 focus:ring-primary-500 focus:border-primary-500 pr-10"
                         >
                             <option value="">Nenhuma (categoria raiz)</option>
                             {availableParents.map(cat => (
                                 <option key={cat.id} value={cat.id}>
-                                    {cat.icon} {cat.name}
+                                    {cat.name}
                                 </option>
                             ))}
                         </select>
                         <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted pointer-events-none" />
                     </div>
                     <p className="text-xs text-text-muted mt-1.5 ml-1">Máximo 3 níveis de hierarquia</p>
-                </div>
-
-                <div>
-                    <label className="block text-sm font-medium text-text-secondary mb-2">Ícone</label>
-                    <div className="flex flex-wrap gap-2">
-                        {icons.map((i) => (
-                            <button
-                                key={i}
-                                onClick={() => setIcon(i)}
-                                className={`w-10 h-10 rounded-xl flex items-center justify-center text-xl transition-all ${icon === i
-                                    ? 'bg-primary-500/20 ring-2 ring-primary-500 scale-105'
-                                    : 'bg-bg-elevated hover:bg-bg-hover border border-border-default'
-                                    }`}
-                            >
-                                {i}
-                            </button>
-                        ))}
-                    </div>
                 </div>
 
                 <div>
@@ -126,6 +104,20 @@ export function CreateCategoryModal({ onClose }: CreateCategoryModalProps) {
                                 style={{ backgroundColor: c }}
                             />
                         ))}
+                    </div>
+                </div>
+
+                {/* Preview */}
+                <div>
+                    <label className="block text-sm font-medium text-text-secondary mb-2">Prévia</label>
+                    <div className="flex items-center gap-3 p-3 bg-bg-elevated rounded-xl border border-border-default">
+                        <div
+                            className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-semibold text-sm"
+                            style={{ backgroundColor: color }}
+                        >
+                            {name ? name.charAt(0).toUpperCase() : 'A'}
+                        </div>
+                        <span className="text-text-primary font-medium">{name || 'Nome da Categoria'}</span>
                     </div>
                 </div>
             </Modal.Body>
