@@ -293,6 +293,12 @@ export function SettingsVariables() {
                                         }}
                                         className="w-full px-4 py-2.5 bg-bg-elevated border border-border-default rounded-xl text-text-primary focus:border-primary-500 focus:ring-1 focus:ring-primary-500/30"
                                     >
+                                        {/* Show current category first if it's new (not in allCategories) */}
+                                        {formData.category && !allCategories.includes(formData.category) && (
+                                            <option value={formData.category}>
+                                                {formData.category} (nova)
+                                            </option>
+                                        )}
                                         {allCategories.map(cat => (
                                             <option key={cat} value={cat}>
                                                 {DEFAULT_CATEGORIES.find(c => c.value === cat)?.label || cat}
