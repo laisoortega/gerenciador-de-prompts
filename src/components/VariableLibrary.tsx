@@ -4,7 +4,7 @@ import clsx from 'clsx';
 import { useCustomVariablesQuery } from '../hooks/useCustomVariablesQuery';
 import { CustomVariable } from '../services/api';
 
-// Category configuration with icons and colors
+// Category configuration with icons and colors - defaults for known categories
 const CATEGORY_CONFIG: Record<string, { icon: React.ComponentType<any>; color: string; label: string }> = {
     copywriting: { icon: PenTool, color: '#3b82f6', label: 'Copywriting' },
     universal: { icon: Globe, color: '#8b5cf6', label: 'Universal' },
@@ -12,6 +12,13 @@ const CATEGORY_CONFIG: Record<string, { icon: React.ComponentType<any>; color: s
     videos: { icon: Video, color: '#f59e0b', label: 'Vídeos' },
     custom: { icon: Braces, color: '#10b981', label: 'Personalizadas' }
 };
+
+// Default config for custom categories
+const DEFAULT_CATEGORY_CONFIG = { icon: Braces, color: '#64748b', label: '' };
+
+function getCategoryConfig(categoryId: string) {
+    return CATEGORY_CONFIG[categoryId] || { ...DEFAULT_CATEGORY_CONFIG, label: categoryId };
+}
 
 interface VariableLibraryProps {
     onInsertVariable: (variableName: string) => void;
@@ -61,8 +68,13 @@ export function VariableLibrary({ onInsertVariable }: VariableLibraryProps) {
         return filtered;
     }, [variablesByCategory, searchQuery]);
 
-    const categoryOrder = ['copywriting', 'universal', 'imagens', 'videos', 'custom'];
-    const sortedCategories = categoryOrder.filter(cat => filteredCategories[cat]?.length > 0);
+    // Sort categories: predefined first, then custom ones alphabetically
+    const predefinedOrder = ['copywriting', 'universal', 'imagens', 'videos', 'custom'];
+    const allCategoryIds = Object.keys(filteredCategories);
+    const sortedCategories = [
+        ...predefinedOrder.filter(cat => allCategoryIds.includes(cat)),
+        ...allCategoryIds.filter(cat => !predefinedOrder.includes(cat)).sort()
+    ];
 
     return (
         <div className="flex flex-col h-full">
@@ -96,7 +108,7 @@ export function VariableLibrary({ onInsertVariable }: VariableLibraryProps) {
                     </div>
                 ) : (
                     sortedCategories.map(categoryId => {
-                        const config = CATEGORY_CONFIG[categoryId] || CATEGORY_CONFIG.custom;
+                        const config = getCategoryConfig(categoryId);
                         const categoryVariables = filteredCategories[categoryId] || [];
 
                         return (

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Plus, Pencil, Trash2, Variable, ChevronLeft, GripVertical } from 'lucide-react';
 import { useCustomVariablesQuery } from '../hooks/useCustomVariablesQuery';
 import { CustomVariable } from '../services/api';
@@ -44,6 +44,14 @@ export function SettingsVariables() {
     const [formData, setFormData] = useState<VariableFormData>(initialFormData);
     const [newOption, setNewOption] = useState('');
     const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+
+    // Get all unique categories from existing variables + defaults
+    const allCategories = useMemo(() => {
+        const fromVariables = variables.map(v => v.category).filter(Boolean);
+        const fromDefaults = DEFAULT_CATEGORIES.map(c => c.value);
+        const unique = [...new Set([...fromDefaults, ...fromVariables])];
+        return unique.sort();
+    }, [variables]);
 
     const handleOpenCreate = () => {
         setEditingVariable(null);
@@ -261,16 +269,22 @@ export function SettingsVariables() {
 
                         <div>
                             <label className="block text-sm font-medium text-text-secondary mb-1.5">Categoria</label>
-                            <select
+                            <input
+                                type="text"
+                                list="category-options"
                                 value={formData.category}
-                                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                                className="w-full px-4 py-2.5 bg-bg-elevated border border-border-default rounded-xl text-text-primary focus:border-primary-500 focus:ring-1 focus:ring-primary-500/30"
-                            >
-                                {DEFAULT_CATEGORIES.map(cat => (
-                                    <option key={cat.value} value={cat.value}>{cat.label}</option>
+                                onChange={(e) => setFormData({ ...formData, category: e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '_') })}
+                                className="w-full px-4 py-2.5 bg-bg-elevated border border-border-default rounded-xl text-text-primary placeholder-text-muted focus:border-primary-500 focus:ring-1 focus:ring-primary-500/30"
+                                placeholder="Ex: marketing, redes_sociais"
+                            />
+                            <datalist id="category-options">
+                                {allCategories.map(cat => (
+                                    <option key={cat} value={cat}>
+                                        {DEFAULT_CATEGORIES.find(c => c.value === cat)?.label || cat}
+                                    </option>
                                 ))}
-                            </select>
-                            <p className="text-xs text-text-muted mt-1">A categoria agrupa suas variáveis na biblioteca</p>
+                            </datalist>
+                            <p className="text-xs text-text-muted mt-1">Digite uma categoria existente ou crie uma nova</p>
                         </div>
 
                         <div>
