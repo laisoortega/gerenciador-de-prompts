@@ -8,11 +8,12 @@ import { VariableLibrary } from './VariableLibrary';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 export function CreatePromptModal({ onClose, initialData }: { onClose: () => void; initialData?: Prompt }) {
-    const { addPrompt, updatePrompt, activeWorkspaceId } = useStore();
+    const { addPrompt, updatePrompt, activeWorkspaceId, categories, selectedCategoryId } = useStore();
     const [title, setTitle] = useState(initialData?.title || '');
     const [content, setContent] = useState(initialData?.content || '');
     const [tagsInput, setTagsInput] = useState(initialData?.tags?.join(', ') || '');
     const [recommendedAi, setRecommendedAi] = useState(initialData?.recommended_ai || 'gpt-4');
+    const [categoryId, setCategoryId] = useState<string | null>(initialData?.category_id || selectedCategoryId || null);
     const [detectedVariables, setDetectedVariables] = useState<{ name: string, default?: string }[]>([]);
     const [showLibrary, setShowLibrary] = useState(true);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -84,6 +85,7 @@ export function CreatePromptModal({ onClose, initialData }: { onClose: () => voi
             variables: finalVariables,
             tags,
             recommended_ai: recommendedAi,
+            category_id: categoryId,
             workspace_id: activeWorkspaceId,
             is_favorite: initialData?.is_favorite || false
         };
@@ -126,6 +128,19 @@ export function CreatePromptModal({ onClose, initialData }: { onClose: () => voi
 
                         <div className="grid grid-cols-2 gap-4">
                             <div>
+                                <label className="block text-sm font-medium text-text-secondary mb-1.5 ml-1">Categoria</label>
+                                <select
+                                    value={categoryId || ''}
+                                    onChange={(e) => setCategoryId(e.target.value || null)}
+                                    className="flex h-10 w-full rounded-xl border border-border-default bg-bg-surface px-3 py-2 text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 transition-all"
+                                >
+                                    <option value="">Sem Categoria</option>
+                                    {categories.map(cat => (
+                                        <option key={cat.id} value={cat.id}>{cat.name}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div>
                                 <label className="block text-sm font-medium text-text-secondary mb-1.5 ml-1">IA Recomendada</label>
                                 <select
                                     value={recommendedAi}
@@ -140,13 +155,13 @@ export function CreatePromptModal({ onClose, initialData }: { onClose: () => voi
                                     <option value="midjourney">Midjourney</option>
                                 </select>
                             </div>
-                            <Input
-                                label="Tags"
-                                value={tagsInput}
-                                onChange={(e) => setTagsInput(e.target.value)}
-                                placeholder="vendas, email, marketing"
-                            />
                         </div>
+                        <Input
+                            label="Tags"
+                            value={tagsInput}
+                            onChange={(e) => setTagsInput(e.target.value)}
+                            placeholder="vendas, email, marketing"
+                        />
 
                         <div>
                             <label className="block text-sm font-medium text-text-secondary mb-1.5 ml-1">

@@ -175,10 +175,10 @@ export function SettingsVariables() {
                                     )}
                                     <div className="flex items-center gap-2 mt-2">
                                         <span className={`text-xs px-2 py-0.5 rounded ${variable.type === 'text'
-                                                ? 'bg-blue-500/10 text-blue-500'
-                                                : variable.type === 'select'
-                                                    ? 'bg-green-500/10 text-green-500'
-                                                    : 'bg-purple-500/10 text-purple-500'
+                                            ? 'bg-blue-500/10 text-blue-500'
+                                            : variable.type === 'select'
+                                                ? 'bg-green-500/10 text-green-500'
+                                                : 'bg-purple-500/10 text-purple-500'
                                             }`}>
                                             {variable.type === 'text' ? 'Texto' : variable.type === 'select' ? 'Seleção' : 'Múltipla'}
                                         </span>
@@ -211,139 +211,147 @@ export function SettingsVariables() {
             </div>
 
             {/* Create/Edit Modal */}
-            <Modal
-                isOpen={isModalOpen}
-                onClose={() => setModalOpen(false)}
-                title={editingVariable ? 'Editar Variável' : 'Nova Variável'}
-            >
-                <div className="space-y-4">
-                    <div>
-                        <label className="block text-sm font-medium text-text-secondary mb-1.5">Nome da Variável</label>
-                        <input
-                            type="text"
-                            value={formData.label}
-                            onChange={(e) => setFormData({ ...formData, label: e.target.value })}
-                            className="w-full px-4 py-2.5 bg-bg-elevated border border-border-default rounded-xl text-text-primary placeholder-text-muted focus:border-primary-500 focus:ring-1 focus:ring-primary-500/30"
-                            placeholder="Ex: Minha Marca"
-                        />
-                        {formData.label && (
-                            <p className="text-xs text-text-muted mt-1">
-                                Slug: {`{{${formData.label.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '')}}}`}
-                            </p>
-                        )}
-                    </div>
-
-                    <div>
-                        <label className="block text-sm font-medium text-text-secondary mb-1.5">Descrição (opcional)</label>
-                        <input
-                            type="text"
-                            value={formData.description}
-                            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                            className="w-full px-4 py-2.5 bg-bg-elevated border border-border-default rounded-xl text-text-primary placeholder-text-muted focus:border-primary-500 focus:ring-1 focus:ring-primary-500/30"
-                            placeholder="Ex: Nome da marca para usar nos prompts"
-                        />
-                    </div>
-
-                    <div>
-                        <label className="block text-sm font-medium text-text-secondary mb-1.5">Tipo</label>
-                        <div className="grid grid-cols-3 gap-2">
-                            {(['text', 'select', 'multiselect'] as const).map((type) => (
-                                <button
-                                    key={type}
-                                    onClick={() => setFormData({ ...formData, type })}
-                                    className={`px-4 py-2.5 rounded-xl border text-sm font-medium transition-all ${formData.type === type
-                                            ? 'bg-primary-500 border-primary-500 text-white'
-                                            : 'bg-bg-elevated border-border-default text-text-secondary hover:border-primary-500'
-                                        }`}
-                                >
-                                    {type === 'text' ? 'Texto Livre' : type === 'select' ? 'Seleção Única' : 'Múltipla Seleção'}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-
-                    {formData.type === 'text' ? (
+            {isModalOpen && (
+                <Modal open={isModalOpen} onClose={() => setModalOpen(false)} size="md">
+                    <Modal.Header>
+                        <h2 className="text-xl font-bold text-text-primary">
+                            {editingVariable ? 'Editar Variável' : 'Nova Variável'}
+                        </h2>
+                    </Modal.Header>
+                    <Modal.Body className="space-y-4">
                         <div>
-                            <label className="block text-sm font-medium text-text-secondary mb-1.5">Placeholder</label>
+                            <label className="block text-sm font-medium text-text-secondary mb-1.5">Nome da Variável</label>
                             <input
                                 type="text"
-                                value={formData.placeholder}
-                                onChange={(e) => setFormData({ ...formData, placeholder: e.target.value })}
+                                value={formData.label}
+                                onChange={(e) => setFormData({ ...formData, label: e.target.value })}
                                 className="w-full px-4 py-2.5 bg-bg-elevated border border-border-default rounded-xl text-text-primary placeholder-text-muted focus:border-primary-500 focus:ring-1 focus:ring-primary-500/30"
-                                placeholder="Ex: Digite o nome da sua marca"
+                                placeholder="Ex: Minha Marca"
+                                autoFocus
+                            />
+                            {formData.label && (
+                                <p className="text-xs text-text-muted mt-1">
+                                    Slug: {`{{${formData.label.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '')}}}`}
+                                </p>
+                            )}
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-text-secondary mb-1.5">Descrição (opcional)</label>
+                            <input
+                                type="text"
+                                value={formData.description}
+                                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                className="w-full px-4 py-2.5 bg-bg-elevated border border-border-default rounded-xl text-text-primary placeholder-text-muted focus:border-primary-500 focus:ring-1 focus:ring-primary-500/30"
+                                placeholder="Ex: Nome da marca para usar nos prompts"
                             />
                         </div>
-                    ) : (
+
                         <div>
-                            <label className="block text-sm font-medium text-text-secondary mb-1.5">Opções</label>
-
-                            {/* Existing options */}
-                            {formData.options.length > 0 && (
-                                <div className="space-y-2 mb-3">
-                                    {formData.options.map((opt, index) => (
-                                        <div key={index} className="flex items-center gap-2">
-                                            <span className="flex-1 px-3 py-2 bg-bg-elevated border border-border-subtle rounded-lg text-sm text-text-primary">
-                                                {opt.label}
-                                            </span>
-                                            <button
-                                                onClick={() => handleRemoveOption(index)}
-                                                className="p-2 hover:bg-error-500/10 rounded-lg text-text-muted hover:text-error-500"
-                                            >
-                                                <Trash2 className="w-3 h-3" />
-                                            </button>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-
-                            {/* Add new option */}
-                            <div className="flex gap-2">
-                                <input
-                                    type="text"
-                                    value={newOption}
-                                    onChange={(e) => setNewOption(e.target.value)}
-                                    onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddOption())}
-                                    className="flex-1 px-4 py-2.5 bg-bg-elevated border border-border-default rounded-xl text-text-primary placeholder-text-muted focus:border-primary-500 focus:ring-1 focus:ring-primary-500/30"
-                                    placeholder="Nova opção"
-                                />
-                                <Button onClick={handleAddOption} variant="outline" size="sm">
-                                    <Plus className="w-4 h-4" />
-                                </Button>
+                            <label className="block text-sm font-medium text-text-secondary mb-1.5">Tipo</label>
+                            <div className="grid grid-cols-3 gap-2">
+                                {(['text', 'select', 'multiselect'] as const).map((type) => (
+                                    <button
+                                        key={type}
+                                        type="button"
+                                        onClick={() => setFormData({ ...formData, type })}
+                                        className={`px-4 py-2.5 rounded-xl border text-sm font-medium transition-all ${formData.type === type
+                                            ? 'bg-primary-500 border-primary-500 text-white'
+                                            : 'bg-bg-elevated border-border-default text-text-secondary hover:border-primary-500'
+                                            }`}
+                                    >
+                                        {type === 'text' ? 'Texto Livre' : type === 'select' ? 'Seleção Única' : 'Múltipla Seleção'}
+                                    </button>
+                                ))}
                             </div>
                         </div>
-                    )}
-                </div>
 
-                <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-border-subtle">
-                    <Button variant="ghost" onClick={() => setModalOpen(false)}>Cancelar</Button>
-                    <Button
-                        onClick={handleSave}
-                        disabled={!formData.label || (formData.type !== 'text' && formData.options.length === 0) || isAdding || isUpdating}
-                    >
-                        {isAdding || isUpdating ? 'Salvando...' : editingVariable ? 'Salvar' : 'Criar'}
-                    </Button>
-                </div>
-            </Modal>
+                        {formData.type === 'text' ? (
+                            <div>
+                                <label className="block text-sm font-medium text-text-secondary mb-1.5">Placeholder</label>
+                                <input
+                                    type="text"
+                                    value={formData.placeholder}
+                                    onChange={(e) => setFormData({ ...formData, placeholder: e.target.value })}
+                                    className="w-full px-4 py-2.5 bg-bg-elevated border border-border-default rounded-xl text-text-primary placeholder-text-muted focus:border-primary-500 focus:ring-1 focus:ring-primary-500/30"
+                                    placeholder="Ex: Digite o nome da sua marca"
+                                />
+                            </div>
+                        ) : (
+                            <div>
+                                <label className="block text-sm font-medium text-text-secondary mb-1.5">Opções</label>
+
+                                {/* Existing options */}
+                                {formData.options.length > 0 && (
+                                    <div className="space-y-2 mb-3">
+                                        {formData.options.map((opt, index) => (
+                                            <div key={index} className="flex items-center gap-2">
+                                                <span className="flex-1 px-3 py-2 bg-bg-elevated border border-border-subtle rounded-lg text-sm text-text-primary">
+                                                    {opt.label}
+                                                </span>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleRemoveOption(index)}
+                                                    className="p-2 hover:bg-error-500/10 rounded-lg text-text-muted hover:text-error-500"
+                                                >
+                                                    <Trash2 className="w-3 h-3" />
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+
+                                {/* Add new option */}
+                                <div className="flex gap-2">
+                                    <input
+                                        type="text"
+                                        value={newOption}
+                                        onChange={(e) => setNewOption(e.target.value)}
+                                        onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddOption())}
+                                        className="flex-1 px-4 py-2.5 bg-bg-elevated border border-border-default rounded-xl text-text-primary placeholder-text-muted focus:border-primary-500 focus:ring-1 focus:ring-primary-500/30"
+                                        placeholder="Nova opção"
+                                    />
+                                    <Button type="button" onClick={handleAddOption} variant="outline">
+                                        <Plus className="w-4 h-4" />
+                                    </Button>
+                                </div>
+                            </div>
+                        )}
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <Button variant="ghost" onClick={() => setModalOpen(false)}>Cancelar</Button>
+                        <Button
+                            onClick={handleSave}
+                            disabled={!formData.label || (formData.type !== 'text' && formData.options.length === 0) || isAdding || isUpdating}
+                        >
+                            {isAdding || isUpdating ? 'Salvando...' : editingVariable ? 'Salvar' : 'Criar'}
+                        </Button>
+                    </Modal.Footer>
+                </Modal>
+            )}
 
             {/* Delete Confirmation */}
-            <Modal
-                isOpen={!!deleteConfirm}
-                onClose={() => setDeleteConfirm(null)}
-                title="Excluir Variável"
-            >
-                <p className="text-text-secondary mb-6">
-                    Tem certeza que deseja excluir esta variável? Ela será removida de todos os prompts que a utilizam.
-                </p>
-                <div className="flex justify-end gap-3">
-                    <Button variant="ghost" onClick={() => setDeleteConfirm(null)}>Cancelar</Button>
-                    <Button
-                        onClick={() => deleteConfirm && handleDelete(deleteConfirm)}
-                        className="bg-error-500 hover:bg-error-600"
-                    >
-                        Excluir
-                    </Button>
-                </div>
-            </Modal>
+            {deleteConfirm && (
+                <Modal open={!!deleteConfirm} onClose={() => setDeleteConfirm(null)} size="sm">
+                    <Modal.Header>
+                        <h2 className="text-xl font-bold text-text-primary">Excluir Variável</h2>
+                    </Modal.Header>
+                    <Modal.Body>
+                        <p className="text-text-secondary">
+                            Tem certeza que deseja excluir esta variável? Ela será removida de todos os prompts que a utilizam.
+                        </p>
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <Button variant="ghost" onClick={() => setDeleteConfirm(null)}>Cancelar</Button>
+                        <Button
+                            onClick={() => deleteConfirm && handleDelete(deleteConfirm)}
+                            className="bg-error-500 hover:bg-error-600"
+                        >
+                            Excluir
+                        </Button>
+                    </Modal.Footer>
+                </Modal>
+            )}
         </div>
     );
 }
