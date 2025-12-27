@@ -44,6 +44,8 @@ export function SettingsVariables() {
     const [formData, setFormData] = useState<VariableFormData>(initialFormData);
     const [newOption, setNewOption] = useState('');
     const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+    const [showNewCategory, setShowNewCategory] = useState(false);
+    const [newCategoryName, setNewCategoryName] = useState('');
 
     // Get all unique categories from existing variables + defaults
     const allCategories = useMemo(() => {
@@ -277,22 +279,64 @@ export function SettingsVariables() {
 
                         <div>
                             <label className="block text-sm font-medium text-text-secondary mb-1.5">Categoria</label>
-                            <input
-                                type="text"
-                                list="category-options"
-                                value={formData.category}
-                                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                                className="w-full px-4 py-2.5 bg-bg-elevated border border-border-default rounded-xl text-text-primary placeholder-text-muted focus:border-primary-500 focus:ring-1 focus:ring-primary-500/30"
-                                placeholder="Ex: marketing, redes_sociais"
-                            />
-                            <datalist id="category-options">
-                                {allCategories.map(cat => (
-                                    <option key={cat} value={cat}>
-                                        {DEFAULT_CATEGORIES.find(c => c.value === cat)?.label || cat}
-                                    </option>
-                                ))}
-                            </datalist>
-                            <p className="text-xs text-text-muted mt-1">Digite uma categoria existente ou crie uma nova</p>
+                            {!showNewCategory ? (
+                                <>
+                                    <select
+                                        value={formData.category}
+                                        onChange={(e) => {
+                                            if (e.target.value === '__nova__') {
+                                                setShowNewCategory(true);
+                                                setNewCategoryName('');
+                                            } else {
+                                                setFormData({ ...formData, category: e.target.value });
+                                            }
+                                        }}
+                                        className="w-full px-4 py-2.5 bg-bg-elevated border border-border-default rounded-xl text-text-primary focus:border-primary-500 focus:ring-1 focus:ring-primary-500/30"
+                                    >
+                                        {allCategories.map(cat => (
+                                            <option key={cat} value={cat}>
+                                                {DEFAULT_CATEGORIES.find(c => c.value === cat)?.label || cat}
+                                            </option>
+                                        ))}
+                                        <option value="__nova__">+ Criar nova categoria</option>
+                                    </select>
+                                    <p className="text-xs text-text-muted mt-1">Escolha uma categoria ou crie uma nova</p>
+                                </>
+                            ) : (
+                                <>
+                                    <div className="flex gap-2">
+                                        <input
+                                            type="text"
+                                            value={newCategoryName}
+                                            onChange={(e) => setNewCategoryName(e.target.value)}
+                                            className="flex-1 px-4 py-2.5 bg-bg-elevated border border-border-default rounded-xl text-text-primary placeholder-text-muted focus:border-primary-500 focus:ring-1 focus:ring-primary-500/30"
+                                            placeholder="Nome da nova categoria"
+                                            autoFocus
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                if (newCategoryName.trim()) {
+                                                    const slug = newCategoryName.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+                                                    setFormData({ ...formData, category: slug });
+                                                }
+                                                setShowNewCategory(false);
+                                            }}
+                                            className="px-4 py-2.5 bg-primary-500 text-white rounded-xl hover:bg-primary-600 transition-colors"
+                                        >
+                                            OK
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowNewCategory(false)}
+                                            className="px-4 py-2.5 bg-bg-elevated border border-border-default text-text-secondary rounded-xl hover:bg-bg-hover transition-colors"
+                                        >
+                                            Cancelar
+                                        </button>
+                                    </div>
+                                    <p className="text-xs text-text-muted mt-1">Digite o nome da nova categoria</p>
+                                </>
+                            )}
                         </div>
 
                         <div>
