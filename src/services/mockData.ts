@@ -52,7 +52,7 @@ export const MOCK_CATEGORIES: Category[] = [
         depth: 0,
         path: 'cat-copy',
         is_expanded: false,
-        prompt_count: 45,
+
         order_index: 0
     },
     // Subcategories for Copywriting
@@ -67,7 +67,7 @@ export const MOCK_CATEGORIES: Category[] = [
         depth: 1,
         path: 'cat-copy/cat-email',
         is_expanded: false,
-        prompt_count: 8,
+
         order_index: 0
     },
     {
@@ -81,7 +81,7 @@ export const MOCK_CATEGORIES: Category[] = [
         depth: 1,
         path: 'cat-copy/cat-whatsapp',
         is_expanded: false,
-        prompt_count: 6,
+
         order_index: 1
     },
     {
@@ -95,7 +95,7 @@ export const MOCK_CATEGORIES: Category[] = [
         depth: 1,
         path: 'cat-copy/cat-sales-page',
         is_expanded: false,
-        prompt_count: 7,
+
         order_index: 2
     },
     {
@@ -109,7 +109,7 @@ export const MOCK_CATEGORIES: Category[] = [
         depth: 1,
         path: 'cat-copy/cat-capture-page',
         is_expanded: false,
-        prompt_count: 5,
+
         order_index: 3
     },
     {
@@ -123,7 +123,7 @@ export const MOCK_CATEGORIES: Category[] = [
         depth: 1,
         path: 'cat-copy/cat-ads',
         is_expanded: false,
-        prompt_count: 5,
+
         order_index: 4
     },
     {
@@ -137,7 +137,7 @@ export const MOCK_CATEGORIES: Category[] = [
         depth: 1,
         path: 'cat-copy/cat-vsl',
         is_expanded: false,
-        prompt_count: 5,
+
         order_index: 5
     },
 
@@ -153,7 +153,7 @@ export const MOCK_CATEGORIES: Category[] = [
         depth: 0,
         path: 'cat-social',
         is_expanded: false,
-        prompt_count: 35,
+
         order_index: 1
     },
     {
@@ -167,7 +167,7 @@ export const MOCK_CATEGORIES: Category[] = [
         depth: 1,
         path: 'cat-social/cat-instagram',
         is_expanded: false,
-        prompt_count: 7,
+
         order_index: 0
     },
     {
@@ -181,7 +181,7 @@ export const MOCK_CATEGORIES: Category[] = [
         depth: 1,
         path: 'cat-social/cat-tiktok',
         is_expanded: false,
-        prompt_count: 5,
+
         order_index: 1
     },
     {
@@ -195,7 +195,7 @@ export const MOCK_CATEGORIES: Category[] = [
         depth: 1,
         path: 'cat-social/cat-youtube',
         is_expanded: false,
-        prompt_count: 5,
+
         order_index: 2
     },
 
@@ -211,7 +211,7 @@ export const MOCK_CATEGORIES: Category[] = [
         depth: 0,
         path: 'cat-strategy',
         is_expanded: false,
-        prompt_count: 20,
+
         order_index: 2
     },
     {
@@ -225,7 +225,7 @@ export const MOCK_CATEGORIES: Category[] = [
         depth: 1,
         path: 'cat-strategy/cat-viral',
         is_expanded: false,
-        prompt_count: 5,
+
         order_index: 0
     },
     {
@@ -239,7 +239,7 @@ export const MOCK_CATEGORIES: Category[] = [
         depth: 1,
         path: 'cat-strategy/cat-webinar',
         is_expanded: false,
-        prompt_count: 4,
+
         order_index: 1
     },
     {
@@ -253,7 +253,7 @@ export const MOCK_CATEGORIES: Category[] = [
         depth: 1,
         path: 'cat-strategy/cat-hooks',
         is_expanded: false,
-        prompt_count: 3,
+
         order_index: 2
     }
 ];

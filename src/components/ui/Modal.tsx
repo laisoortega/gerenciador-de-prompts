@@ -39,6 +39,7 @@ export function Modal({ open = true, onClose, children, size = 'md' }: ModalProp
                         leaveTo="opacity-0 scale-95"
                     >
                         <Dialog.Panel
+                            onClick={(e) => e.stopPropagation()}
                             className={clsx(
                                 "w-full rounded-2xl bg-bg-surface shadow-xl ring-1 ring-white/10 overflow-hidden flex flex-col max-h-[90vh]",
                                 {

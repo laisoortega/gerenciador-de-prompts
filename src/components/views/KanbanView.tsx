@@ -9,6 +9,7 @@ import {
     useSensors,
     DragStartEvent,
     DragEndEvent,
+    DragOverEvent,
 } from '@dnd-kit/core';
 import {
     SortableContext,
@@ -18,18 +19,20 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Prompt, Category } from '../../types';
-import { Plus } from 'lucide-react';
+import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { Button } from '../ui/Button';
 
 interface KanbanViewProps {
     prompts: Prompt[];
-    categories: Category[]; // Should be flat list of all categories to form columns? Or just top level?
-    // For Kanban, typically we want ALL categories that have prompts?
-    // Or just top level. We'll use top level + an "Uncategorized" column.
+    categories: Category[];
     onMovePrompt: (promptId: string, categoryId: string) => void;
+    onEdit?: (prompt: Prompt) => void;
+    onDelete?: (prompt: Prompt) => void;
+    onCreatePrompt?: (categoryId: string | null) => void;
 }
 
 // Draggable Prompt Card
-function SortablePromptCard({ prompt }: { prompt: Prompt }) {
+function SortablePromptCard({ prompt, onEdit, onDelete }: { prompt: Prompt; onEdit?: (p: Prompt) => void; onDelete?: (p: Prompt) => void }) {
     const {
         attributes,
         listeners,
@@ -51,12 +54,31 @@ function SortablePromptCard({ prompt }: { prompt: Prompt }) {
             style={style}
             {...attributes}
             {...listeners}
-            className="bg-bg-surface border border-border-subtle p-3 rounded-lg shadow-sm hover:shadow-md cursor-grab active:cursor-grabbing mb-2 group"
+            className="bg-bg-surface border border-border-subtle p-3 rounded-lg shadow-sm hover:shadow-md cursor-grab active:cursor-grabbing mb-2 group relative"
         >
             <div className="flex justify-between items-start mb-1.5">
                 <span className="text-[10px] bg-primary-900/20 text-primary-500 px-1.5 py-0.5 rounded-full font-medium truncate max-w-[100px]">
                     {prompt.category?.name || 'Geral'}
                 </span>
+                {/* Action buttons */}
+                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={(e) => { e.stopPropagation(); onEdit?.(prompt); }}
+                        className="h-5 w-5 hover:text-primary-500"
+                    >
+                        <Pencil className="w-3 h-3" />
+                    </Button>
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={(e) => { e.stopPropagation(); onDelete?.(prompt); }}
+                        className="h-5 w-5 hover:text-error-500"
+                    >
+                        <Trash2 className="w-3 h-3" />
+                    </Button>
+                </div>
             </div>
             <h4 className="text-sm font-semibold text-text-primary line-clamp-2 mb-1">{prompt.title}</h4>
             <div className="flex gap-1 mt-2">
@@ -69,7 +91,7 @@ function SortablePromptCard({ prompt }: { prompt: Prompt }) {
 }
 
 // Droppable Column
-function KanbanColumn({ category, prompts }: { category: Category | null, prompts: Prompt[] }) {
+function KanbanColumn({ category, prompts, onEdit, onDelete, onCreatePrompt, isOver }: { category: Category | null, prompts: Prompt[], onEdit?: (p: Prompt) => void, onDelete?: (p: Prompt) => void, onCreatePrompt?: (categoryId: string | null) => void, isOver?: boolean }) {
     const { setNodeRef } = useSortable({
         id: category ? category.id : 'uncategorized',
         data: { type: 'column', category },
@@ -77,8 +99,14 @@ function KanbanColumn({ category, prompts }: { category: Category | null, prompt
     });
 
     return (
-        <div ref={setNodeRef} className="flex-shrink-0 w-72 flex flex-col h-full bg-bg-base/50 rounded-xl border border-border-subtle overflow-hidden">
-            <div className="p-3 border-b border-border-subtle flex items-center justify-between sticky top-0 bg-bg-base z-10">
+        <div
+            ref={setNodeRef}
+            className={`flex-shrink-0 w-72 flex flex-col h-full rounded-xl border overflow-hidden transition-all duration-200 ${isOver
+                ? 'bg-primary-500/10 border-primary-500 shadow-lg shadow-primary-500/20 ring-2 ring-primary-500/30'
+                : 'bg-bg-elevated/50 border-border-subtle'
+                }`}
+        >
+            <div className="p-3 border-b border-border-subtle flex items-center justify-between sticky top-0 bg-bg-elevated/80 backdrop-blur-sm z-10">
                 <div className="flex items-center gap-2">
                     <span className="font-semibold text-text-primary text-sm">
                         {category ? category.name : 'Sem Categoria'}
@@ -87,9 +115,14 @@ function KanbanColumn({ category, prompts }: { category: Category | null, prompt
                         {prompts.length}
                     </span>
                 </div>
-                <button className="text-text-muted hover:text-primary-500">
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => onCreatePrompt?.(category?.id || null)}
+                    className="h-6 w-6 text-text-muted hover:text-primary-500"
+                >
                     <Plus className="w-4 h-4" />
-                </button>
+                </Button>
             </div>
 
             <div className="flex-1 p-2 overflow-y-auto min-h-[100px]">
@@ -98,7 +131,7 @@ function KanbanColumn({ category, prompts }: { category: Category | null, prompt
                     strategy={verticalListSortingStrategy}
                 >
                     {prompts.map(prompt => (
-                        <SortablePromptCard key={prompt.id} prompt={prompt} />
+                        <SortablePromptCard key={prompt.id} prompt={prompt} onEdit={onEdit} onDelete={onDelete} />
                     ))}
                     {prompts.length === 0 && (
                         <div className="h-full flex items-center justify-center text-xs text-text-muted/50 py-10 dashed border border-border-subtle/30 rounded-lg">
@@ -111,8 +144,9 @@ function KanbanColumn({ category, prompts }: { category: Category | null, prompt
     );
 }
 
-export const KanbanView: React.FC<KanbanViewProps> = ({ prompts, categories, onMovePrompt }) => {
+export const KanbanView: React.FC<KanbanViewProps> = ({ prompts, categories, onMovePrompt, onEdit, onDelete, onCreatePrompt }) => {
     const [activeId, setActiveId] = useState<string | null>(null);
+    const [overId, setOverId] = useState<string | null>(null);
 
     // Group prompts by category
     const groupedPrompts = useMemo(() => {
@@ -148,6 +182,23 @@ export const KanbanView: React.FC<KanbanViewProps> = ({ prompts, categories, onM
 
     const handleDragStart = (event: DragStartEvent) => {
         setActiveId(event.active.id as string);
+    };
+
+    const handleDragOver = (event: DragOverEvent) => {
+        const { over } = event;
+        if (!over) {
+            setOverId(null);
+            return;
+        }
+        // Determine which column we're over
+        if (over.data.current?.type === 'column') {
+            setOverId(over.id as string);
+        } else if (over.data.current?.type === 'prompt') {
+            const overPrompt = prompts.find(p => p.id === over.id);
+            if (overPrompt) {
+                setOverId(overPrompt.category_id || 'uncategorized');
+            }
+        }
     };
 
     const handleDragEnd = (event: DragEndEvent) => {
@@ -191,6 +242,7 @@ export const KanbanView: React.FC<KanbanViewProps> = ({ prompts, categories, onM
         }
 
         setActiveId(null);
+        setOverId(null);
     };
 
     const activePrompt = activeId ? prompts.find(p => p.id === activeId) : null;
@@ -210,6 +262,7 @@ export const KanbanView: React.FC<KanbanViewProps> = ({ prompts, categories, onM
             sensors={sensors}
             collisionDetection={closestCorners}
             onDragStart={handleDragStart}
+            onDragOver={handleDragOver}
             onDragEnd={handleDragEnd}
         >
             <div className="flex gap-4 overflow-x-auto h-[calc(100vh-200px)] pb-4 px-1">
@@ -218,6 +271,10 @@ export const KanbanView: React.FC<KanbanViewProps> = ({ prompts, categories, onM
                         key={cat.id}
                         category={cat.id === 'uncategorized' ? null : cat}
                         prompts={groupedPrompts[cat.id] || []}
+                        onEdit={onEdit}
+                        onDelete={onDelete}
+                        onCreatePrompt={onCreatePrompt}
+                        isOver={overId === cat.id && activeId !== null}
                     />
                 ))}
             </div>

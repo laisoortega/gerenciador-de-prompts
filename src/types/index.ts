@@ -98,7 +98,7 @@ export interface Category {
     // UI State
     is_expanded: boolean;
     is_system?: boolean;
-    prompt_count: number;
+    prompt_count?: number;
 
     // Recursive
     children?: Category[];

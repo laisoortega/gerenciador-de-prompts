@@ -9,18 +9,20 @@ import {
     SortingState,
 } from '@tanstack/react-table';
 import { Prompt } from '../../types';
-import { MoreHorizontal, Share2, Copy, ArrowUpDown } from 'lucide-react';
+import { Share2, Copy, ArrowUpDown, Pencil, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
 interface TableViewProps {
     prompts: Prompt[];
     onShare: (prompt: Prompt) => void;
+    onEdit?: (prompt: Prompt) => void;
+    onDelete?: (prompt: Prompt) => void;
 }
 
 const columnHelper = createColumnHelper<Prompt>();
 
-export const TableView: React.FC<TableViewProps> = ({ prompts, onShare }) => {
+export const TableView: React.FC<TableViewProps> = ({ prompts, onShare, onEdit, onDelete }) => {
     const [sorting, setSorting] = React.useState<SortingState>([]);
 
     const columns = useMemo(() => [
@@ -72,11 +74,14 @@ export const TableView: React.FC<TableViewProps> = ({ prompts, onShare }) => {
                     <button onClick={() => onShare(props.row.original)} className="p-1 hover:bg-bg-hover rounded text-text-secondary hover:text-text-primary">
                         <Share2 className="w-4 h-4" />
                     </button>
-                    <button className="p-1 hover:bg-bg-hover rounded text-text-secondary hover:text-text-primary">
-                        <Copy className="w-4 h-4" />
+                    <button onClick={() => onEdit && onEdit(props.row.original)} className="p-1 hover:bg-bg-hover rounded text-text-secondary hover:text-text-primary">
+                        <Pencil className="w-4 h-4" />
+                    </button>
+                    <button onClick={() => onDelete && onDelete(props.row.original)} className="p-1 hover:bg-bg-hover rounded text-text-secondary hover:text-red-500">
+                        <Trash2 className="w-4 h-4" />
                     </button>
                     <button className="p-1 hover:bg-bg-hover rounded text-text-secondary hover:text-text-primary">
-                        <MoreHorizontal className="w-4 h-4" />
+                        <Copy className="w-4 h-4" />
                     </button>
                 </div>
             ),

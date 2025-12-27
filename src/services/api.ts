@@ -1,11 +1,133 @@
 import { PromptShare, SharedPrompt, CommonVariable, VideoAnalysis, Prompt } from '../types';
-import { MOCK_PROMPTS } from './mockData';
+import { MOCK_PROMPTS, MOCK_CATEGORIES } from './mockData';
+import { supabase } from '../lib/supabase';
 
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+const IS_REAL_DB = !!supabase;
+
+// In-Memory DB for Mock State (persists while dev server runs)
+let MEM_PROMPTS = [...MOCK_PROMPTS];
+let MEM_CATEGORIES = [...MOCK_CATEGORIES];
+
+// --- Core Data Fetching ---
+
+export const fetchWorkspaces = async () => {
+    if (IS_REAL_DB && supabase) {
+        const { data, error } = await supabase.from('workspaces').select('*');
+        if (error) throw error;
+        return data;
+    }
+    await delay(500);
+    // TODO: move MEM_WORKSPACES if needed
+    return import('./mockData').then(m => m.MOCK_WORKSPACES);
+};
+
+export const fetchPrompts = async (workspaceId: string) => {
+    if (IS_REAL_DB && supabase) {
+        const { data, error } = await supabase
+            .from('prompts')
+            .select('*')
+            .eq('workspace_id', workspaceId)
+            .order('created_at', { ascending: false });
+        if (error) throw error;
+        // Manual join for category in Supabase would be .select('*, categories(*)')
+        // For now let's assume raw data
+        return data as Prompt[];
+    }
+    await delay(600);
+    // Filter by workspace if we had multiple mock workspaces populated
+    return MEM_PROMPTS;
+};
+
+export const fetchCategories = async (workspaceId: string) => {
+    if (IS_REAL_DB && supabase) {
+        const { data, error } = await supabase
+            .from('categories')
+            .select('*')
+            .eq('workspace_id', workspaceId)
+            .order('order_index');
+        if (error) throw error;
+        return data as Category[]; // Needs tree construction client side usually
+    }
+    await delay(500);
+    return MEM_CATEGORIES;
+};
+
+// --- CRUD Operations ---
+
+export const createPrompt = async (promptData: Partial<Prompt>) => {
+    if (IS_REAL_DB && supabase) {
+        const { data, error } = await supabase.from('prompts').insert(promptData).select().single();
+        if (error) throw error;
+        return data;
+    }
+    await delay(800);
+    const newPrompt = {
+        ...promptData,
+        id: `p-mock-${Date.now()}`,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        copy_count: 0
+    } as Prompt;
+    MEM_PROMPTS = [newPrompt, ...MEM_PROMPTS];
+    return newPrompt;
+};
+
+export const updatePrompt = async (id: string, updates: Partial<Prompt>) => {
+    if (IS_REAL_DB && supabase) {
+        const { data, error } = await supabase.from('prompts').update(updates).eq('id', id).select().single();
+        if (error) throw error;
+        return data;
+    }
+    await delay(600);
+    MEM_PROMPTS = MEM_PROMPTS.map(p => p.id === id ? { ...p, ...updates } : p);
+    return MEM_PROMPTS.find(p => p.id === id);
+};
+
+export const deletePrompt = async (id: string) => {
+    if (IS_REAL_DB && supabase) {
+        const { error } = await supabase.from('prompts').delete().eq('id', id);
+        if (error) throw error;
+        return true;
+    }
+    await delay(500);
+    MEM_PROMPTS = MEM_PROMPTS.filter(p => p.id !== id);
+    return true;
+};
+
+// Categories CRUD
+export const createCategory = async (catData: Partial<Category>) => {
+    await delay(500);
+    const newCat = {
+        ...catData,
+        id: `c-mock-${Date.now()}`,
+        children: []
+    } as Category;
+    MEM_CATEGORIES = [...MEM_CATEGORIES, newCat];
+    return newCat;
+};
+
+export const updateCategory = async (id: string, updates: Partial<Category>) => {
+    await delay(400);
+    MEM_CATEGORIES = MEM_CATEGORIES.map(c => c.id === id ? { ...c, ...updates } : c);
+    return MEM_CATEGORIES.find(c => c.id === id);
+};
+
+export const deleteCategory = async (id: string) => {
+    await delay(400);
+    MEM_CATEGORIES = MEM_CATEGORIES.filter(c => c.id !== id);
+    return true;
+};
 
 // --- Sharing ---
 
 export const sharePrompt = async (promptId: string, data: { emails: string[], permission: string, message?: string }) => {
+    if (IS_REAL_DB && supabase) {
+        // TODO: Implement Real Share Logic
+        console.warn('Real Share Logic not yet implemented');
+    }
+
     await delay(1000);
     // Mock response
     return {
@@ -23,6 +145,9 @@ export const sharePrompt = async (promptId: string, data: { emails: string[], pe
 };
 
 export const fetchPromptShares = async (promptId: string): Promise<PromptShare[]> => {
+    if (IS_REAL_DB && supabase) {
+        // Real implementation would go here
+    }
     await delay(600);
     return [
         {
@@ -174,14 +299,14 @@ export const fetchAnalysisStatus = async (id: string): Promise<VideoAnalysis> =>
             summary: 'O vídeo explica uma técnica de 3 passos para roteiros: Gancho polêmico, Conteúdo estruturado e CTA forte.',
             generated_prompts: [
                 {
-                    title: 'Roteiro Viral Curto',
                     content: 'Crie um roteiro de curto com gancho polêmico sobre [Tópico].',
+                    title: 'Roteiro Viral Curto',
                     category: 'Social Media',
                     variables: ['Tópico']
                 },
                 {
-                    title: 'Script Educativo',
                     content: 'Explique [Tema] usando metodo de 3 passos.',
+                    title: 'Script Educativo',
                     category: 'Education',
                     variables: ['Tema']
                 }

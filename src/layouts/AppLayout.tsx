@@ -4,23 +4,37 @@ import { useStore } from '../contexts/StoreContext';
 import { Sidebar } from '../components/ui/Sidebar';
 import { Header } from '../components/ui/Header';
 import { MobileBottomNav } from '../components/ui/MobileBottomNav';
-import { CreatePromptModal } from '../components/CreatePromptModal';
 import { CreateCategoryModal } from '../components/CreateCategoryModal';
 
 export const AppLayout: React.FC = () => {
     const {
-        isCreatePromptModalOpen,
-        setCreatePromptModalOpen,
         isCreateCategoryModalOpen,
-        setCreateCategoryModalOpen
+        setCreateCategoryModalOpen,
+        isMobileMenuOpen,
+        setMobileMenuOpen
     } = useStore();
 
     return (
-        <div className="flex h-screen bg-bg-base overflow-hidden">
-            {/* Sidebar hidden on mobile */}
+        <div className="flex h-screen bg-bg-base overflow-hidden relative">
+            {/* Desktop Sidebar */}
             <div className="hidden md:block">
                 <Sidebar />
             </div>
+
+            {/* Mobile Sidebar Overlay */}
+            {isMobileMenuOpen && (
+                <div className="fixed inset-0 z-40 md:hidden">
+                    {/* Backdrop */}
+                    <div
+                        className="absolute inset-0 bg-black/50 backdrop-blur-sm animate-fadeIn"
+                        onClick={() => setMobileMenuOpen(false)}
+                    />
+                    {/* Sidebar Content */}
+                    <div className="absolute left-0 top-0 bottom-0 w-[80%] max-w-sm bg-bg-surface animate-slideRight">
+                        <Sidebar />
+                    </div>
+                </div>
+            )}
 
             <div className="flex-1 flex flex-col min-w-0 mb-[60px] md:mb-0">
                 <Header />
@@ -32,11 +46,7 @@ export const AppLayout: React.FC = () => {
             {/* Bottom Nav visible only on mobile */}
             <MobileBottomNav />
 
-            {/* Global Modals */}
-            {isCreatePromptModalOpen && (
-                <CreatePromptModal onClose={() => setCreatePromptModalOpen(false)} />
-            )}
-
+            {/* Global Modal: Category only - Prompt modal is in Dashboard with edit data */}
             {isCreateCategoryModalOpen && (
                 <CreateCategoryModal onClose={() => setCreateCategoryModalOpen(false)} />
             )}
