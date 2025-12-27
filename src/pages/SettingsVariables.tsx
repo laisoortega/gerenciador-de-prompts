@@ -83,13 +83,8 @@ export function SettingsVariables() {
             .replace(/[^a-z0-9]+/g, '_')
             .replace(/^_|_$/g, '');
 
-        // Format category to snake_case
-        const categorySlug = formData.category
-            .toLowerCase()
-            .normalize('NFD')
-            .replace(/[\u0300-\u036f]/g, '')
-            .replace(/[^a-z0-9]+/g, '_')
-            .replace(/^_|_$/g, '') || 'custom';
+        // Keep category as typed (just trim whitespace)
+        const categoryValue = formData.category.trim() || 'custom';
 
         const data = {
             name: slug,
@@ -98,7 +93,7 @@ export function SettingsVariables() {
             type: formData.type,
             options: formData.type !== 'text' ? formData.options : [],
             placeholder: formData.type === 'text' ? formData.placeholder : undefined,
-            category: categorySlug,
+            category: categoryValue,
             is_active: true
         };
 
@@ -323,8 +318,7 @@ export function SettingsVariables() {
                                             type="button"
                                             onClick={() => {
                                                 if (newCategoryName.trim()) {
-                                                    const slug = newCategoryName.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
-                                                    setFormData({ ...formData, category: slug });
+                                                    setFormData({ ...formData, category: newCategoryName.trim() });
                                                 }
                                                 setShowNewCategory(false);
                                             }}
