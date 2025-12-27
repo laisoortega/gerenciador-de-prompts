@@ -178,59 +178,114 @@ export function SettingsVariables() {
                         </Button>
                     </div>
                 ) : (
-                    <div className="space-y-3">
-                        {variables.map((variable) => (
-                            <div
-                                key={variable.id}
-                                className="bg-bg-surface border border-border-subtle rounded-xl p-4 flex items-center gap-4 group hover:border-border-default transition-colors"
-                            >
-                                <div className="text-text-muted cursor-grab">
-                                    <GripVertical className="w-4 h-4" />
-                                </div>
+                    <div className="space-y-6">
+                        {/* Group variables by category */}
+                        {allCategories.map(category => {
+                            const categoryVariables = variables.filter(v => v.category === category);
+                            if (categoryVariables.length === 0) return null;
 
-                                <div className="flex-1 min-w-0">
-                                    <div className="flex items-center gap-2 mb-1">
-                                        <span className="font-medium text-text-primary">{variable.label}</span>
-                                        <span className="text-xs px-2 py-0.5 bg-bg-elevated rounded text-text-muted">
-                                            {`{{${variable.name}}}`}
-                                        </span>
-                                    </div>
-                                    {variable.description && (
-                                        <p className="text-sm text-text-muted truncate">{variable.description}</p>
-                                    )}
-                                    <div className="flex items-center gap-2 mt-2">
-                                        <span className={`text-xs px-2 py-0.5 rounded ${variable.type === 'text'
-                                            ? 'bg-blue-500/10 text-blue-500'
-                                            : variable.type === 'select'
-                                                ? 'bg-green-500/10 text-green-500'
-                                                : 'bg-purple-500/10 text-purple-500'
-                                            }`}>
-                                            {variable.type === 'text' ? 'Texto' : variable.type === 'select' ? 'Seleção' : 'Múltipla'}
-                                        </span>
-                                        {variable.options && variable.options.length > 0 && (
-                                            <span className="text-xs text-text-muted">
-                                                {variable.options.length} opções
+                            const categoryLabel = DEFAULT_CATEGORIES.find(c => c.value === category)?.label || category;
+
+                            return (
+                                <div key={category} className="bg-bg-surface border border-border-subtle rounded-xl overflow-hidden">
+                                    {/* Category Header */}
+                                    <div className="px-4 py-3 bg-bg-elevated/50 border-b border-border-subtle flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                            <span className="w-2 h-2 rounded-full bg-primary-500"></span>
+                                            <span className="font-medium text-text-primary">{categoryLabel}</span>
+                                            <span className="text-xs text-text-muted bg-bg-elevated px-2 py-0.5 rounded-full">
+                                                {categoryVariables.length}
                                             </span>
-                                        )}
+                                        </div>
+                                    </div>
+
+                                    {/* Variables List */}
+                                    <div className="divide-y divide-border-subtle">
+                                        {categoryVariables.map((variable) => (
+                                            <div
+                                                key={variable.id}
+                                                className="p-4 flex items-center gap-4 group hover:bg-bg-hover/30 transition-colors"
+                                            >
+                                                <div className="text-text-muted cursor-grab">
+                                                    <GripVertical className="w-4 h-4" />
+                                                </div>
+
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="flex items-center gap-2 mb-1">
+                                                        <span className="font-medium text-text-primary">{variable.label}</span>
+                                                        <span className="text-xs px-2 py-0.5 bg-bg-elevated rounded text-text-muted">
+                                                            {`{{${variable.name}}}`}
+                                                        </span>
+                                                    </div>
+                                                    {variable.description && (
+                                                        <p className="text-sm text-text-muted truncate">{variable.description}</p>
+                                                    )}
+                                                    <div className="flex items-center gap-2 mt-2">
+                                                        <span className={`text-xs px-2 py-0.5 rounded ${variable.type === 'text'
+                                                            ? 'bg-blue-500/10 text-blue-500'
+                                                            : variable.type === 'select'
+                                                                ? 'bg-green-500/10 text-green-500'
+                                                                : 'bg-purple-500/10 text-purple-500'
+                                                            }`}>
+                                                            {variable.type === 'text' ? 'Texto' : variable.type === 'select' ? 'Seleção' : 'Múltipla'}
+                                                        </span>
+                                                        {variable.options && variable.options.length > 0 && (
+                                                            <span className="text-xs text-text-muted">
+                                                                {variable.options.length} opções
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </div>
+
+                                                <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <button
+                                                        onClick={() => handleOpenEdit(variable)}
+                                                        className="p-2 hover:bg-bg-hover rounded-lg transition-colors text-text-muted hover:text-text-primary"
+                                                    >
+                                                        <Pencil className="w-4 h-4" />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => setDeleteConfirm(variable.id)}
+                                                        className="p-2 hover:bg-error-500/10 rounded-lg transition-colors text-text-muted hover:text-error-500"
+                                                    >
+                                                        <Trash2 className="w-4 h-4" />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ))}
                                     </div>
                                 </div>
+                            );
+                        })}
 
-                                <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <button
-                                        onClick={() => handleOpenEdit(variable)}
-                                        className="p-2 hover:bg-bg-hover rounded-lg transition-colors text-text-muted hover:text-text-primary"
-                                    >
-                                        <Pencil className="w-4 h-4" />
-                                    </button>
-                                    <button
-                                        onClick={() => setDeleteConfirm(variable.id)}
-                                        className="p-2 hover:bg-error-500/10 rounded-lg transition-colors text-text-muted hover:text-error-500"
-                                    >
-                                        <Trash2 className="w-4 h-4" />
-                                    </button>
+                        {/* Show uncategorized variables if any */}
+                        {variables.filter(v => !v.category || !allCategories.includes(v.category)).length > 0 && (
+                            <div className="bg-bg-surface border border-border-subtle rounded-xl overflow-hidden">
+                                <div className="px-4 py-3 bg-bg-elevated/50 border-b border-border-subtle">
+                                    <span className="font-medium text-text-muted">Sem Categoria</span>
+                                </div>
+                                <div className="divide-y divide-border-subtle">
+                                    {variables.filter(v => !v.category || !allCategories.includes(v.category)).map((variable) => (
+                                        <div
+                                            key={variable.id}
+                                            className="p-4 flex items-center gap-4 group hover:bg-bg-hover/30 transition-colors"
+                                        >
+                                            <div className="flex-1 min-w-0">
+                                                <span className="font-medium text-text-primary">{variable.label}</span>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <button
+                                                    onClick={() => handleOpenEdit(variable)}
+                                                    className="p-2 hover:bg-bg-hover rounded-lg transition-colors text-text-muted"
+                                                >
+                                                    <Pencil className="w-4 h-4" />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))}
                                 </div>
                             </div>
-                        ))}
+                        )}
                     </div>
                 )}
             </div>
@@ -420,30 +475,33 @@ export function SettingsVariables() {
                         </Button>
                     </Modal.Footer>
                 </Modal>
-            )}
+            )
+            }
 
             {/* Delete Confirmation */}
-            {deleteConfirm && (
-                <Modal open={!!deleteConfirm} onClose={() => setDeleteConfirm(null)} size="sm">
-                    <Modal.Header>
-                        <h2 className="text-xl font-bold text-text-primary">Excluir Variável</h2>
-                    </Modal.Header>
-                    <Modal.Body>
-                        <p className="text-text-secondary">
-                            Tem certeza que deseja excluir esta variável? Ela será removida de todos os prompts que a utilizam.
-                        </p>
-                    </Modal.Body>
-                    <Modal.Footer>
-                        <Button variant="ghost" onClick={() => setDeleteConfirm(null)}>Cancelar</Button>
-                        <Button
-                            onClick={() => deleteConfirm && handleDelete(deleteConfirm)}
-                            className="bg-error-500 hover:bg-error-600"
-                        >
-                            Excluir
-                        </Button>
-                    </Modal.Footer>
-                </Modal>
-            )}
-        </div>
+            {
+                deleteConfirm && (
+                    <Modal open={!!deleteConfirm} onClose={() => setDeleteConfirm(null)} size="sm">
+                        <Modal.Header>
+                            <h2 className="text-xl font-bold text-text-primary">Excluir Variável</h2>
+                        </Modal.Header>
+                        <Modal.Body>
+                            <p className="text-text-secondary">
+                                Tem certeza que deseja excluir esta variável? Ela será removida de todos os prompts que a utilizam.
+                            </p>
+                        </Modal.Body>
+                        <Modal.Footer>
+                            <Button variant="ghost" onClick={() => setDeleteConfirm(null)}>Cancelar</Button>
+                            <Button
+                                onClick={() => deleteConfirm && handleDelete(deleteConfirm)}
+                                className="bg-error-500 hover:bg-error-600"
+                            >
+                                Excluir
+                            </Button>
+                        </Modal.Footer>
+                    </Modal>
+                )
+            }
+        </div >
     );
 }
