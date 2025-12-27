@@ -2,13 +2,15 @@ import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useStore } from '../../contexts/StoreContext';
+import { useAuth } from '../../contexts/AuthContext';
 import { Plus, Settings, LogOut, LayoutGrid, LayoutList, Kanban, FolderTree, Share2, Inbox } from 'lucide-react';
 import { fetchSharedWithMe } from '../../services/api';
 import { SimpleCategoryList } from '../sidebar/SimpleCategoryList';
 import { Button } from './Button';
 
 export const Sidebar: React.FC = () => {
-    const { categoryTree, currentView, setCurrentView, logout, user, toggleCategoryExpand, moveCategory, setCreateCategoryModalOpen, selectedCategoryId, setSelectedCategoryId } = useStore();
+    const { categoryTree, currentView, setCurrentView, user, setCreateCategoryModalOpen, selectedCategoryId, setSelectedCategoryId } = useStore();
+    const { signOut } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -148,7 +150,7 @@ export const Sidebar: React.FC = () => {
                     <Button
                         variant="ghost"
                         size="sm"
-                        onClick={logout}
+                        onClick={signOut}
                         className="flex-1 gap-2 text-text-secondary hover:bg-error-500/10 hover:text-error-500"
                     >
                         <LogOut className="w-3.5 h-3.5" /> Sair

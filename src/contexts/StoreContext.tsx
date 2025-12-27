@@ -1,8 +1,10 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useMemo } from 'react';
 import { User, Workspace, Prompt, Category, ViewType, Plan } from '../types';
 import { INITIAL_USER, MOCK_WORKSPACES, MOCK_PROMPTS, MOCK_CATEGORIES, MOCK_PLANS } from '../services/mockData';
+import { fetchUserDefaultWorkspace } from '../services/api';
 import { usePromptsQuery } from '../hooks/usePromptsQuery';
 import { useCategoriesQuery } from '../hooks/useCategoriesQuery';
+import { useAuth } from './AuthContext';
 
 interface StoreContextType {
     user: User | null;
@@ -72,9 +74,11 @@ interface StoreContextType {
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
 
 export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+    const { user: authUser } = useAuth();
+
     // --- Auth State ---
     const [user, setUser] = useState<User | null>(null);
-    const [activeWorkspaceId, setActiveWorkspaceId] = useState<string>(''); // Currently Mocked, usually comes from User/Url
+    const [activeWorkspaceId, setActiveWorkspaceId] = useState<string>('');
 
     // --- UI State ---
     const [searchQuery, setSearchQuery] = useState('');
@@ -91,21 +95,44 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     const [editingCategory, setEditingCategory] = useState<Category | undefined>(undefined);
 
     // --- Data Hooks (React Query) ---
-    // Only fetch if we have an active workspace (or user)
-    // For Mock dev, we default activeWorkspace to first mock one if not set
 
-    // Initial User Check & Workspace Setup
+    // Setup user and workspace when auth changes
     useEffect(() => {
-        setTimeout(() => {
-            const storedUser = localStorage.getItem('pm_user');
-            if (storedUser) {
-                setUser(JSON.parse(storedUser));
+        const setupUserAndWorkspace = async () => {
+            setIsLoadingUser(true);
+
+            if (authUser) {
+                // Create internal user object from auth user
+                setUser({
+                    id: authUser.id,
+                    email: authUser.email || '',
+                    name: authUser.user_metadata?.name || authUser.email?.split('@')[0] || 'Usuário',
+                    plan_id: 'free',
+                    role: 'user',
+                    onboarding_completed: true
+                } as User);
+
+                // Fetch or create default workspace
+                try {
+                    const workspace = await fetchUserDefaultWorkspace(authUser.id);
+                    if (workspace) {
+                        setActiveWorkspaceId(workspace.id);
+                    }
+                } catch (error) {
+                    console.error('Error fetching workspace:', error);
+                    // Fallback to mock
+                    setActiveWorkspaceId(MOCK_WORKSPACES[0]?.id || 'mock-workspace');
+                }
+            } else {
+                setUser(null);
+                setActiveWorkspaceId('');
             }
-            // Default select first workspace
-            setActiveWorkspaceId(MOCK_WORKSPACES[0].id);
+
             setIsLoadingUser(false);
-        }, 500);
-    }, []);
+        };
+
+        setupUserAndWorkspace();
+    }, [authUser]);
 
     const {
         prompts: rawPrompts,
@@ -200,7 +227,12 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
     // Categories
     const addCategory = (data: Partial<Category>) => {
-        addCategoryMutation({ ...data, workspace_id: activeWorkspaceId } as any);
+        if (!user) return;
+        addCategoryMutation({
+            ...data,
+            user_id: user.id,
+            workspace_id: activeWorkspaceId
+        } as any);
     };
 
     const updateCategory = (id: string, data: Partial<Category>) => {

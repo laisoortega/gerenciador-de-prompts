@@ -48,7 +48,7 @@ export const fetchCategories = async (workspaceId: string) => {
             .eq('workspace_id', workspaceId)
             .order('order_index');
         if (error) throw error;
-        return data as Category[]; // Needs tree construction client side usually
+        return data as Category[];
     }
     await delay(500);
     return MEM_CATEGORIES;
@@ -98,6 +98,11 @@ export const deletePrompt = async (id: string) => {
 
 // Categories CRUD
 export const createCategory = async (catData: Partial<Category>) => {
+    if (IS_REAL_DB && supabase) {
+        const { data, error } = await supabase.from('categories').insert(catData).select().single();
+        if (error) throw error;
+        return data;
+    }
     await delay(500);
     const newCat = {
         ...catData,
@@ -109,15 +114,67 @@ export const createCategory = async (catData: Partial<Category>) => {
 };
 
 export const updateCategory = async (id: string, updates: Partial<Category>) => {
+    if (IS_REAL_DB && supabase) {
+        const { data, error } = await supabase.from('categories').update(updates).eq('id', id).select().single();
+        if (error) throw error;
+        return data;
+    }
     await delay(400);
     MEM_CATEGORIES = MEM_CATEGORIES.map(c => c.id === id ? { ...c, ...updates } : c);
     return MEM_CATEGORIES.find(c => c.id === id);
 };
 
 export const deleteCategory = async (id: string) => {
+    if (IS_REAL_DB && supabase) {
+        const { error } = await supabase.from('categories').delete().eq('id', id);
+        if (error) throw error;
+        return true;
+    }
     await delay(400);
     MEM_CATEGORIES = MEM_CATEGORIES.filter(c => c.id !== id);
     return true;
+};
+
+// Workspace initialization for new users
+export const createDefaultWorkspace = async (userId: string) => {
+    if (IS_REAL_DB && supabase) {
+        const { data, error } = await supabase
+            .from('workspaces')
+            .insert({
+                owner_id: userId,
+                name: 'Meu Workspace',
+                slug: 'meu-workspace',
+                is_default: true
+            })
+            .select()
+            .single();
+        if (error) throw error;
+        return data;
+    }
+    return null;
+};
+
+export const fetchUserDefaultWorkspace = async (userId: string) => {
+    if (IS_REAL_DB && supabase) {
+        // First try to get any workspace for this user
+        const { data: workspaces, error: fetchError } = await supabase
+            .from('workspaces')
+            .select('*')
+            .eq('owner_id', userId)
+            .order('created_at', { ascending: true });
+
+        if (fetchError) throw fetchError;
+
+        // If user has workspaces, return the first one (or the default one if exists)
+        if (workspaces && workspaces.length > 0) {
+            const defaultWs = workspaces.find(w => w.is_default) || workspaces[0];
+            return defaultWs;
+        }
+
+        // No workspace found, create one
+        return await createDefaultWorkspace(userId);
+    }
+    return { id: 'mock-workspace-1', name: 'Mock Workspace' };
 };
 
 // --- Sharing ---
