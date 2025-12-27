@@ -13,6 +13,7 @@ interface VariableFormData {
     type: 'text' | 'select' | 'multiselect';
     options: { value: string; label: string }[];
     placeholder: string;
+    category: string;
 }
 
 const initialFormData: VariableFormData = {
@@ -21,8 +22,18 @@ const initialFormData: VariableFormData = {
     description: '',
     type: 'text',
     options: [],
-    placeholder: ''
+    placeholder: '',
+    category: 'custom'
 };
+
+// Default category options
+const DEFAULT_CATEGORIES = [
+    { value: 'copywriting', label: 'Copywriting' },
+    { value: 'universal', label: 'Universal' },
+    { value: 'imagens', label: 'Imagens' },
+    { value: 'videos', label: 'Vídeos' },
+    { value: 'custom', label: 'Personalizadas' }
+];
 
 export function SettingsVariables() {
     const navigate = useNavigate();
@@ -48,7 +59,8 @@ export function SettingsVariables() {
             description: variable.description || '',
             type: variable.type,
             options: variable.options || [],
-            placeholder: variable.placeholder || ''
+            placeholder: variable.placeholder || '',
+            category: variable.category || 'custom'
         });
         setModalOpen(true);
     };
@@ -68,7 +80,7 @@ export function SettingsVariables() {
             type: formData.type,
             options: formData.type !== 'text' ? formData.options : [],
             placeholder: formData.type === 'text' ? formData.placeholder : undefined,
-            category: 'custom',
+            category: formData.category || 'custom',
             is_active: true
         };
 
@@ -245,6 +257,20 @@ export function SettingsVariables() {
                                 className="w-full px-4 py-2.5 bg-bg-elevated border border-border-default rounded-xl text-text-primary placeholder-text-muted focus:border-primary-500 focus:ring-1 focus:ring-primary-500/30"
                                 placeholder="Ex: Nome da marca para usar nos prompts"
                             />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-text-secondary mb-1.5">Categoria</label>
+                            <select
+                                value={formData.category}
+                                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                                className="w-full px-4 py-2.5 bg-bg-elevated border border-border-default rounded-xl text-text-primary focus:border-primary-500 focus:ring-1 focus:ring-primary-500/30"
+                            >
+                                {DEFAULT_CATEGORIES.map(cat => (
+                                    <option key={cat.value} value={cat.value}>{cat.label}</option>
+                                ))}
+                            </select>
+                            <p className="text-xs text-text-muted mt-1">A categoria agrupa suas variáveis na biblioteca</p>
                         </div>
 
                         <div>
