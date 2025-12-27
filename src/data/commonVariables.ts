@@ -221,7 +221,7 @@ export const COMMON_VARIABLES: VariableCategory[] = [
                 label: 'Nome da Marca',
                 description: 'Nome da empresa/marca',
                 type: 'text',
-                placeholder: 'Ex: PromptMaster'
+                placeholder: 'Ex: Blaze'
             },
             {
                 name: 'produto',

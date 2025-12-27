@@ -1,10 +1,27 @@
 import React, { useState, useMemo } from 'react';
 import { Plus, Pencil, Trash2, Variable, ChevronLeft, GripVertical } from 'lucide-react';
 import { useCustomVariablesQuery } from '../hooks/useCustomVariablesQuery';
-import { CustomVariable } from '../services/api';
+import { CustomVariable, updateCustomVariable } from '../services/api';
 import { Button } from '../components/ui/Button';
 import { Modal } from '../components/ui/Modal';
 import { useNavigate } from 'react-router-dom';
+import {
+    DndContext,
+    closestCenter,
+    KeyboardSensor,
+    PointerSensor,
+    useSensor,
+    useSensors,
+    DragEndEvent,
+} from '@dnd-kit/core';
+import {
+    arrayMove,
+    SortableContext,
+    sortableKeyboardCoordinates,
+    useSortable,
+    verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 interface VariableFormData {
     name: string;
@@ -35,6 +52,9 @@ const DEFAULT_CATEGORIES = [
     { value: 'custom', label: 'Personalizadas' }
 ];
 
+// Protected categories that cannot be deleted (system defaults)
+const PROTECTED_CATEGORIES = ['copywriting', 'universal', 'imagens', 'videos', 'custom'];
+
 export function SettingsVariables() {
     const navigate = useNavigate();
     const { variables, isLoading, addVariable, updateVariable, deleteVariable, isAdding, isUpdating } = useCustomVariablesQuery();
@@ -47,6 +67,13 @@ export function SettingsVariables() {
     const [showNewCategory, setShowNewCategory] = useState(false);
     const [newCategoryName, setNewCategoryName] = useState('');
 
+    // Category management states
+    const [editingCategory, setEditingCategory] = useState<string | null>(null);
+    const [editingCategoryLabel, setEditingCategoryLabel] = useState('');
+    const [deletingCategory, setDeletingCategory] = useState<string | null>(null);
+    const [deleteAction, setDeleteAction] = useState<'move' | 'delete'>('move');
+    const [moveToCategory, setMoveToCategory] = useState('');
+
     // Get all unique categories from existing variables + defaults
     const allCategories = useMemo(() => {
         const fromVariables = variables.map(v => v.category).filter(Boolean);
@@ -54,6 +81,37 @@ export function SettingsVariables() {
         const unique = [...new Set([...fromDefaults, ...fromVariables])];
         return unique.sort();
     }, [variables]);
+
+    // DnD Sensors
+    const sensors = useSensors(
+        useSensor(PointerSensor),
+        useSensor(KeyboardSensor, {
+            coordinateGetter: sortableKeyboardCoordinates,
+        })
+    );
+
+    // Handle drag end - reorder within same category
+    const handleDragEnd = async (event: DragEndEvent, categoryVariables: CustomVariable[]) => {
+        const { active, over } = event;
+
+        if (!over || active.id === over.id) return;
+
+        const oldIndex = categoryVariables.findIndex(v => v.id === active.id);
+        const newIndex = categoryVariables.findIndex(v => v.id === over.id);
+
+        if (oldIndex !== -1 && newIndex !== -1) {
+            const newOrder = arrayMove(categoryVariables, oldIndex, newIndex);
+
+            // Update order_index for each variable
+            for (let i = 0; i < newOrder.length; i++) {
+                if (newOrder[i].order_index !== i) {
+                    await updateCustomVariable(newOrder[i].id, { order_index: i });
+                }
+            }
+
+            // Refresh the query (will be handled by invalidation in the hook)
+        }
+    };
 
     const handleOpenCreate = () => {
         setEditingVariable(null);
@@ -132,6 +190,65 @@ export function SettingsVariables() {
         setDeleteConfirm(null);
     };
 
+    // Category management handlers
+    const handleOpenEditCategory = (category: string) => {
+        const label = DEFAULT_CATEGORIES.find(c => c.value === category)?.label || category;
+        setEditingCategory(category);
+        setEditingCategoryLabel(label);
+    };
+
+    const handleRenameCategory = async () => {
+        if (!editingCategory || !editingCategoryLabel.trim()) return;
+
+        const newCategoryValue = editingCategoryLabel.trim().toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .replace(/[^a-z0-9]+/g, '_')
+            .replace(/^_|_$/g, '');
+
+        // Update all variables in this category
+        const categoryVars = variables.filter(v => v.category === editingCategory);
+        for (const variable of categoryVars) {
+            await updateVariable({ id: variable.id, data: { category: newCategoryValue } });
+        }
+
+        setEditingCategory(null);
+        setEditingCategoryLabel('');
+        // Force refresh by navigating
+        window.location.reload();
+    };
+
+    const handleOpenDeleteCategory = (category: string) => {
+        setDeletingCategory(category);
+        setDeleteAction('move');
+        // Set default move target to first available category
+        const otherCategories = allCategories.filter(c => c !== category);
+        setMoveToCategory(otherCategories[0] || 'custom');
+    };
+
+    const handleDeleteCategory = async () => {
+        if (!deletingCategory) return;
+
+        const categoryVars = variables.filter(v => v.category === deletingCategory);
+
+        if (deleteAction === 'move' && moveToCategory) {
+            // Move all variables to another category
+            for (const variable of categoryVars) {
+                await updateVariable({ id: variable.id, data: { category: moveToCategory } });
+            }
+        } else if (deleteAction === 'delete') {
+            // Delete all variables in this category
+            for (const variable of categoryVars) {
+                deleteVariable(variable.id);
+            }
+        }
+
+        setDeletingCategory(null);
+        window.location.reload();
+    };
+
+    const isProtectedCategory = (category: string) => PROTECTED_CATEGORIES.includes(category);
+
     return (
         <div className="min-h-screen bg-bg-base">
             {/* Header */}
@@ -189,13 +306,33 @@ export function SettingsVariables() {
                             return (
                                 <div key={category} className="bg-bg-surface border border-border-subtle rounded-xl overflow-hidden">
                                     {/* Category Header */}
-                                    <div className="px-4 py-3 bg-bg-elevated/50 border-b border-border-subtle flex items-center justify-between">
+                                    <div className="px-4 py-3 bg-bg-elevated/50 border-b border-border-subtle flex items-center justify-between group">
                                         <div className="flex items-center gap-2">
                                             <span className="w-2 h-2 rounded-full bg-primary-500"></span>
                                             <span className="font-medium text-text-primary">{categoryLabel}</span>
                                             <span className="text-xs text-text-muted bg-bg-elevated px-2 py-0.5 rounded-full">
                                                 {categoryVariables.length}
                                             </span>
+                                        </div>
+
+                                        {/* Category Actions */}
+                                        <div className="flex items-center gap-1">
+                                            <button
+                                                onClick={() => handleOpenEditCategory(category)}
+                                                className="p-1.5 hover:bg-bg-hover rounded-lg transition-colors text-text-muted hover:text-text-primary"
+                                                title="Renomear categoria"
+                                            >
+                                                <Pencil className="w-3.5 h-3.5" />
+                                            </button>
+                                            {!isProtectedCategory(category) && (
+                                                <button
+                                                    onClick={() => handleOpenDeleteCategory(category)}
+                                                    className="p-1.5 hover:bg-error-500/10 rounded-lg transition-colors text-text-muted hover:text-error-500"
+                                                    title="Excluir categoria"
+                                                >
+                                                    <Trash2 className="w-3.5 h-3.5" />
+                                                </button>
+                                            )}
                                         </div>
                                     </div>
 
@@ -502,6 +639,106 @@ export function SettingsVariables() {
                     </Modal>
                 )
             }
+
+            {/* Edit Category Modal */}
+            {editingCategory && (
+                <Modal open={!!editingCategory} onClose={() => setEditingCategory(null)} size="sm">
+                    <Modal.Header>
+                        <h2 className="text-xl font-bold text-text-primary">Editar Categoria</h2>
+                    </Modal.Header>
+                    <Modal.Body className="space-y-4">
+                        <div>
+                            <label className="block text-sm font-medium text-text-secondary mb-1.5">Nome da Categoria</label>
+                            <input
+                                type="text"
+                                value={editingCategoryLabel}
+                                onChange={(e) => setEditingCategoryLabel(e.target.value)}
+                                className="w-full px-4 py-2.5 bg-bg-elevated border border-border-default rounded-xl text-text-primary placeholder-text-muted focus:border-primary-500 focus:ring-1 focus:ring-primary-500/30"
+                                placeholder="Nome da categoria"
+                                autoFocus
+                            />
+                        </div>
+                        <div className="p-3 rounded-lg bg-warning-500/10 text-warning-600 text-sm">
+                            ⚠️ Todas as {variables.filter(v => v.category === editingCategory).length} variáveis desta categoria serão atualizadas.
+                        </div>
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <Button variant="ghost" onClick={() => setEditingCategory(null)}>Cancelar</Button>
+                        <Button onClick={handleRenameCategory} disabled={!editingCategoryLabel.trim()}>
+                            Salvar
+                        </Button>
+                    </Modal.Footer>
+                </Modal>
+            )}
+
+            {/* Delete Category Modal */}
+            {deletingCategory && (
+                <Modal open={!!deletingCategory} onClose={() => setDeletingCategory(null)} size="md">
+                    <Modal.Header>
+                        <h2 className="text-xl font-bold text-text-primary">Excluir Categoria</h2>
+                    </Modal.Header>
+                    <Modal.Body className="space-y-4">
+                        <div className="p-3 rounded-lg bg-warning-500/10 text-warning-600 text-sm">
+                            ⚠️ A categoria "{DEFAULT_CATEGORIES.find(c => c.value === deletingCategory)?.label || deletingCategory}" contém {variables.filter(v => v.category === deletingCategory).length} variáveis.
+                        </div>
+
+                        <div className="space-y-3">
+                            <p className="text-sm font-medium text-text-primary">O que deseja fazer com as variáveis?</p>
+
+                            <label className="flex items-start gap-3 p-3 rounded-lg border border-border-default hover:border-primary-500 cursor-pointer transition-colors">
+                                <input
+                                    type="radio"
+                                    name="deleteAction"
+                                    value="move"
+                                    checked={deleteAction === 'move'}
+                                    onChange={() => setDeleteAction('move')}
+                                    className="mt-1"
+                                />
+                                <div className="flex-1">
+                                    <span className="text-sm font-medium text-text-primary">Mover para outra categoria</span>
+                                    {deleteAction === 'move' && (
+                                        <select
+                                            value={moveToCategory}
+                                            onChange={(e) => setMoveToCategory(e.target.value)}
+                                            className="mt-2 w-full px-3 py-2 bg-bg-elevated border border-border-default rounded-lg text-text-primary text-sm"
+                                        >
+                                            {allCategories.filter(c => c !== deletingCategory).map(cat => (
+                                                <option key={cat} value={cat}>
+                                                    {DEFAULT_CATEGORIES.find(c => c.value === cat)?.label || cat}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    )}
+                                </div>
+                            </label>
+
+                            <label className="flex items-start gap-3 p-3 rounded-lg border border-border-default hover:border-error-500 cursor-pointer transition-colors">
+                                <input
+                                    type="radio"
+                                    name="deleteAction"
+                                    value="delete"
+                                    checked={deleteAction === 'delete'}
+                                    onChange={() => setDeleteAction('delete')}
+                                    className="mt-1"
+                                />
+                                <div>
+                                    <span className="text-sm font-medium text-error-500">Excluir todas as variáveis junto com a categoria</span>
+                                    <p className="text-xs text-text-muted mt-1">Esta ação não pode ser desfeita!</p>
+                                </div>
+                            </label>
+                        </div>
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <Button variant="ghost" onClick={() => setDeletingCategory(null)}>Cancelar</Button>
+                        <Button
+                            onClick={handleDeleteCategory}
+                            className={deleteAction === 'delete' ? 'bg-error-500 hover:bg-error-600' : ''}
+                        >
+                            {deleteAction === 'move' ? 'Mover e Excluir' : 'Excluir Tudo'}
+                        </Button>
+                    </Modal.Footer>
+                </Modal>
+            )}
         </div >
     );
 }

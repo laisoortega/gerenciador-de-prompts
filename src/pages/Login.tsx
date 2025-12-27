@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useStore } from '../contexts/StoreContext';
+import { BlazeLogo } from '../components/ui/BlazeLogo';
 
 export const Login: React.FC = () => {
     const { login, isLoading } = useStore();
@@ -13,10 +14,10 @@ export const Login: React.FC = () => {
     return (
         <div className="min-h-screen bg-bg-base flex flex-col items-center justify-center p-4">
             <div className="mb-8 text-center">
-                <div className="w-16 h-16 bg-gradient-to-tr from-primary-600 to-primary-400 rounded-2xl flex items-center justify-center text-white text-3xl font-bold shadow-2xl shadow-[#3b82f633] mx-auto mb-4">
-                    P
+                <div className="w-16 h-16 bg-gradient-to-tr from-orange-500 to-orange-400 rounded-2xl flex items-center justify-center shadow-2xl shadow-orange-500/30 mx-auto mb-4">
+                    <BlazeLogo size={40} />
                 </div>
-                <h1 className="text-3xl font-bold text-text-primary">PromptMaster</h1>
+                <h1 className="text-3xl font-bold text-text-primary">Blaze</h1>
                 <p className="text-text-secondary mt-2">Gerencie seus prompts como um profissional.</p>
             </div>
 

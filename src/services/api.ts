@@ -431,7 +431,7 @@ const DEFAULT_VARIABLES = [
         ]
     },
     // Universal
-    { name: 'nome_marca', label: 'Nome da Marca', description: 'Nome da empresa/marca', type: 'text', category: 'universal', placeholder: 'Ex: PromptMaster' },
+    { name: 'nome_marca', label: 'Nome da Marca', description: 'Nome da empresa/marca', type: 'text', category: 'universal', placeholder: 'Ex: Blaze' },
     { name: 'produto', label: 'Produto/Serviço', description: 'O que está sendo oferecido', type: 'text', category: 'universal', placeholder: 'Ex: Curso de Marketing Digital' },
     {
         name: 'idioma', label: 'Idioma', description: 'Idioma do conteúdo', type: 'select', category: 'universal', options: [

@@ -59,7 +59,7 @@ export const Onboarding: React.FC = () => {
                                 Olá, {user?.name?.split(' ')[0]}!
                             </h1>
                             <p className="text-text-secondary mb-8">
-                                Bem-vindo ao PromptMaster. Vamos personalizar sua experiência em menos de 1 minuto.
+                                Bem-vindo ao Blaze. Vamos personalizar sua experiência em menos de 1 minuto.
                             </p>
                             <button onClick={handleNext} className="btn-primary w-full justify-center">
                                 Começar <ChevronRight className="w-4 h-4 ml-2" />
@@ -83,8 +83,8 @@ export const Onboarding: React.FC = () => {
                                         key={r.id}
                                         onClick={() => setRole(r.id)}
                                         className={`w-full flex items-center gap-3 p-3 rounded-xl border connection-all text-left transition-all ${role === r.id
-                                                ? 'border-primary-500 bg-primary-500/10 text-primary-500'
-                                                : 'border-border-default hover:border-border-hover text-text-primary hover:bg-bg-elevated'
+                                            ? 'border-primary-500 bg-primary-500/10 text-primary-500'
+                                            : 'border-border-default hover:border-border-hover text-text-primary hover:bg-bg-elevated'
                                             }`}
                                     >
                                         <span className={role === r.id ? 'text-primary-500' : 'text-text-muted'}>
@@ -136,6 +136,6 @@ export const Onboarding: React.FC = () => {
                     )}
                 </div>
             </div>
-        </div>
+        </div >
     );
 };

@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { Mail, Lock, User, Loader2, Sparkles, ArrowLeft } from 'lucide-react';
+import { Mail, Lock, User, Loader2, ArrowLeft } from 'lucide-react';
+import { BlazeLogo } from '../components/ui/BlazeLogo';
 
 export function LoginPage() {
     const [mode, setMode] = useState<'login' | 'signup' | 'forgot'>('login');
@@ -72,11 +73,11 @@ export function LoginPage() {
                 {/* Logo */}
                 <div className="text-center mb-8">
                     <div className="inline-flex items-center gap-2 mb-4">
-                        <div className="w-12 h-12 bg-gradient-to-br from-primary-500 to-primary-600 rounded-xl flex items-center justify-center shadow-lg shadow-primary-500/30">
-                            <Sparkles className="w-6 h-6 text-white" />
+                        <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center shadow-lg shadow-orange-500/30">
+                            <BlazeLogo size={28} />
                         </div>
                     </div>
-                    <h1 className="text-2xl font-bold text-text-primary">PromptMaster</h1>
+                    <h1 className="text-2xl font-bold text-text-primary">Blaze</h1>
                     <p className="text-text-muted mt-1">Gerencie seus prompts de IA</p>
                 </div>
 

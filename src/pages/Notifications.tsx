@@ -5,7 +5,7 @@ const MOCK_NOTIFICATIONS = [
     { id: 1, type: 'share', title: 'Ana Silva compartilhou um prompt com você', description: 'Prompt: Gerador de Email de Vendas', time: '20 min atrás', read: false },
     { id: 2, type: 'system', title: 'Nova funcionalidade: Análise de Vídeo', description: 'Agora você pode analisar vídeos do YouTube diretamente!', time: '1h atrás', read: false },
     { id: 3, type: 'subscription', title: 'Seu período de teste acaba em 3 dias', description: 'Faça upgrade para não perder acesso aos recursos Pro.', time: '2h atrás', read: true },
-    { id: 4, type: 'info', title: 'Bem-vindo ao PromptMaster!', description: 'Complete seu perfil para aproveitar ao máximo.', time: '1 dia atrás', read: true },
+    { id: 4, type: 'info', title: 'Bem-vindo ao Blaze!', description: 'Complete seu perfil para aproveitar ao máximo.', time: '1 dia atrás', read: true },
 ];
 
 export const Notifications: React.FC = () => {

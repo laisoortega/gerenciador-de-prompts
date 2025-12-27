@@ -7,6 +7,7 @@ import { Plus, Settings, LogOut, LayoutGrid, LayoutList, Kanban, FolderTree, Sha
 import { fetchSharedWithMe } from '../../services/api';
 import { SimpleCategoryList } from '../sidebar/SimpleCategoryList';
 import { Button } from './Button';
+import { BlazeLogoText } from './BlazeLogo';
 
 export const Sidebar: React.FC = () => {
     const { categoryTree, currentView, setCurrentView, user, setCreateCategoryModalOpen, selectedCategoryId, setSelectedCategoryId } = useStore();
@@ -36,8 +37,7 @@ export const Sidebar: React.FC = () => {
         <aside className="w-64 bg-bg-surface border-r border-border-subtle h-screen flex flex-col">
             {/* Logo */}
             <div className="h-16 flex items-center px-4 border-b border-border-default cursor-pointer" onClick={() => navigate('/')}>
-                <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center text-white font-bold mr-3 shadow-lg shadow-primary-500/20">P</div>
-                <span className="font-bold text-lg text-text-primary tracking-tight">PromptMaster</span>
+                <BlazeLogoText />
             </div>
 
             {/* Views Navigation */}
