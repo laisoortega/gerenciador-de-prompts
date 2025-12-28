@@ -58,7 +58,15 @@ export const fetchCategories = async (workspaceId: string) => {
 
 export const createPrompt = async (promptData: Partial<Prompt>) => {
     if (IS_REAL_DB && supabase) {
-        const { data, error } = await supabase.from('prompts').insert(promptData).select().single();
+        // Get current user for RLS
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error('User not authenticated');
+
+        const { data, error } = await supabase
+            .from('prompts')
+            .insert({ ...promptData, user_id: user.id })
+            .select()
+            .single();
         if (error) throw error;
         return data;
     }
@@ -99,7 +107,15 @@ export const deletePrompt = async (id: string) => {
 // Categories CRUD
 export const createCategory = async (catData: Partial<Category>) => {
     if (IS_REAL_DB && supabase) {
-        const { data, error } = await supabase.from('categories').insert(catData).select().single();
+        // Get current user for RLS
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error('User not authenticated');
+
+        const { data, error } = await supabase
+            .from('categories')
+            .insert({ ...catData, user_id: user.id })
+            .select()
+            .single();
         if (error) throw error;
         return data;
     }
@@ -181,12 +197,45 @@ export const fetchUserDefaultWorkspace = async (userId: string) => {
 
 export const sharePrompt = async (promptId: string, data: { emails: string[], permission: string, message?: string }) => {
     if (IS_REAL_DB && supabase) {
-        // TODO: Implement Real Share Logic
-        console.warn('Real Share Logic not yet implemented');
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error('User not authenticated');
+
+        const results: { shared: any[], errors: { email: string, error: string }[] } = {
+            shared: [],
+            errors: []
+        };
+
+        // Inserir um compartilhamento para cada email
+        for (const email of data.emails) {
+            const { data: share, error } = await supabase
+                .from('prompt_shares')
+                .insert({
+                    prompt_id: promptId,
+                    shared_by: user.id,
+                    shared_with_email: email.toLowerCase().trim(),
+                    permission: data.permission,
+                    message: data.message || null,
+                    status: 'pending'
+                })
+                .select()
+                .single();
+
+            if (error) {
+                // Verificar se é erro de duplicata
+                if (error.code === '23505') {
+                    results.errors.push({ email, error: 'Já compartilhado com este email' });
+                } else {
+                    results.errors.push({ email, error: error.message });
+                }
+            } else {
+                results.shared.push(share);
+            }
+        }
+
+        return results;
     }
 
     await delay(1000);
-    // Mock response
     return {
         shared: data.emails.map(email => ({
             id: `share-${Date.now()}-${Math.random()}`,
@@ -203,8 +252,22 @@ export const sharePrompt = async (promptId: string, data: { emails: string[], pe
 
 export const fetchPromptShares = async (promptId: string): Promise<PromptShare[]> => {
     if (IS_REAL_DB && supabase) {
-        // Real implementation would go here
+        const { data, error } = await supabase
+            .from('prompt_shares')
+            .select('*')
+            .eq('prompt_id', promptId)
+            .neq('status', 'revoked')
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        // Mapear para o formato esperado
+        return (data || []).map(share => ({
+            ...share,
+            shared_with_user: share.shared_with_user ? { name: share.shared_with_email.split('@')[0] } : null
+        })) as PromptShare[];
     }
+
     await delay(600);
     return [
         {
@@ -221,19 +284,97 @@ export const fetchPromptShares = async (promptId: string): Promise<PromptShare[]
 };
 
 export const revokeShare = async (promptId: string, shareId: string) => {
+    if (IS_REAL_DB && supabase) {
+        const { error } = await supabase
+            .from('prompt_shares')
+            .update({ status: 'revoked', updated_at: new Date().toISOString() })
+            .eq('id', shareId);
+
+        if (error) throw error;
+        return true;
+    }
+
     await delay(500);
     return true;
 };
 
 export const updateSharePermission = async (promptId: string, shareId: string, permission: string) => {
+    if (IS_REAL_DB && supabase) {
+        const { error } = await supabase
+            .from('prompt_shares')
+            .update({ permission, updated_at: new Date().toISOString() })
+            .eq('id', shareId);
+
+        if (error) throw error;
+        return true;
+    }
+
     await delay(500);
     return true;
 };
 
 export const fetchSharedWithMe = async (params: { status?: string, search?: string }): Promise<{ prompts: SharedPrompt[], activeCount: number, pendingCount: number }> => {
-    await delay(800);
+    if (IS_REAL_DB && supabase) {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error('User not authenticated');
 
-    // Mock shared prompts
+        // Buscar compartilhamentos recebidos pelo email do usuário
+        let query = supabase
+            .from('prompt_shares')
+            .select(`
+                *,
+                prompts:prompt_id (*)
+            `)
+            .or(`shared_with_user.eq.${user.id},shared_with_email.eq.${user.email}`)
+            .neq('status', 'revoked')
+            .order('created_at', { ascending: false });
+
+        if (params.status) {
+            query = query.eq('status', params.status);
+        }
+
+        const { data: shares, error } = await query;
+        if (error) throw error;
+
+        // Buscar informações dos usuários que compartilharam
+        const sharedByIds = [...new Set((shares || []).map(s => s.shared_by))];
+
+        // Criar mapa de nomes (simplificado - em produção você buscaria de uma tabela de perfis)
+        const userNames: Record<string, string> = {};
+        for (const id of sharedByIds) {
+            // Por enquanto, usar o email ou um placeholder
+            userNames[id] = 'Usuário';
+        }
+
+        // Mapear para o formato esperado
+        const prompts: SharedPrompt[] = (shares || [])
+            .filter(s => s.prompts) // Filtrar onde o prompt ainda existe
+            .map(share => ({
+                share: {
+                    id: share.id,
+                    prompt_id: share.prompt_id,
+                    shared_by: share.shared_by,
+                    shared_with_email: share.shared_with_email,
+                    permission: share.permission,
+                    status: share.status,
+                    created_at: share.created_at,
+                    message: share.message
+                },
+                prompt: share.prompts,
+                shared_by: {
+                    name: userNames[share.shared_by] || 'Usuário',
+                    avatar_url: ''
+                }
+            }));
+
+        // Contar por status
+        const activeCount = (shares || []).filter(s => s.status === 'active').length;
+        const pendingCount = (shares || []).filter(s => s.status === 'pending').length;
+
+        return { prompts, activeCount, pendingCount };
+    }
+
+    await delay(800);
     const mockSharedPrompts: SharedPrompt[] = [
         {
             share: {
@@ -256,28 +397,6 @@ export const fetchSharedWithMe = async (params: { status?: string, search?: stri
                 name: 'João Silva',
                 avatar_url: ''
             }
-        },
-        {
-            share: {
-                id: 'share-recv-2',
-                prompt_id: 'p-external-2',
-                shared_by: 'user-boss',
-                shared_with_email: 'me@example.com',
-                permission: 'edit',
-                status: 'pending',
-                created_at: new Date().toISOString(),
-                message: 'Por favor revise este prompt de vendas.'
-            },
-            prompt: {
-                ...MOCK_PROMPTS[1],
-                id: 'p-external-2',
-                title: 'Script de Vendas Enterprise',
-                user_id: 'user-boss'
-            },
-            shared_by: {
-                name: 'Maria Chefe',
-                avatar_url: ''
-            }
         }
     ];
 
@@ -288,16 +407,75 @@ export const fetchSharedWithMe = async (params: { status?: string, search?: stri
     return {
         prompts: filtered,
         activeCount: 1,
-        pendingCount: 1
+        pendingCount: 0
     };
 };
 
 export const respondToShare = async (shareId: string, action: 'accept' | 'decline') => {
+    if (IS_REAL_DB && supabase) {
+        const newStatus = action === 'accept' ? 'active' : 'declined';
+
+        const { error } = await supabase
+            .from('prompt_shares')
+            .update({
+                status: newStatus,
+                updated_at: new Date().toISOString()
+            })
+            .eq('id', shareId);
+
+        if (error) throw error;
+        return true;
+    }
+
     await delay(600);
     return true;
 };
 
-export const copySharedPrompt = async (shareId: string, data: any): Promise<Prompt> => {
+export const copySharedPrompt = async (shareId: string, data: { new_title?: string, category_id?: string }): Promise<Prompt> => {
+    if (IS_REAL_DB && supabase) {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error('User not authenticated');
+
+        // Buscar o share e o prompt original
+        const { data: share, error: shareError } = await supabase
+            .from('prompt_shares')
+            .select(`
+                *,
+                prompts:prompt_id (*)
+            `)
+            .eq('id', shareId)
+            .single();
+
+        if (shareError) throw shareError;
+        if (!share || !share.prompts) throw new Error('Share or prompt not found');
+
+        // Buscar o workspace do usuário
+        const workspace = await fetchUserDefaultWorkspace(user.id);
+        if (!workspace) throw new Error('Workspace not found');
+
+        // Criar cópia do prompt
+        const originalPrompt = share.prompts;
+        const { data: newPrompt, error: createError } = await supabase
+            .from('prompts')
+            .insert({
+                workspace_id: workspace.id,
+                user_id: user.id,
+                category_id: data.category_id || null,
+                title: data.new_title || `Cópia: ${originalPrompt.title}`,
+                content: originalPrompt.content,
+                variables: originalPrompt.variables,
+                tags: originalPrompt.tags,
+                recommended_ai: originalPrompt.recommended_ai,
+                is_favorite: false,
+                copy_count: 0
+            })
+            .select()
+            .single();
+
+        if (createError) throw createError;
+        return newPrompt as Prompt;
+    }
+
     await delay(1000);
     return {
         ...MOCK_PROMPTS[0],
