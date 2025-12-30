@@ -12,7 +12,7 @@ import clsx from 'clsx';
 const navTabs = [
     { id: 'prompts', label: 'Meus Prompts', path: '/', icon: FolderOpen },
     { id: 'shared', label: 'Compartilhados', path: '/shared-with-me', icon: Users },
-    { id: 'variables', label: 'Variáveis', path: '/variables', icon: Braces },
+    { id: 'variables', label: 'Variáveis', path: '/settings/variables', icon: Braces },
 ];
 
 export const Header: React.FC = () => {
