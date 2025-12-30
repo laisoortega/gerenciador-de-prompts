@@ -99,7 +99,7 @@ export const CardsView: React.FC<CardsViewProps> = ({ prompts, onShare, onEdit, 
                                 className={clsx(
                                     "absolute top-3 right-3 w-8 h-8 rounded-full flex items-center justify-center transition-all",
                                     prompt.is_favorite
-                                        ? "bg-primary-500 text-white shadow-lg shadow-primary-500/30"
+                                        ? "bg-accent-500 text-white shadow-lg shadow-accent-500/30"
                                         : "bg-black/30 text-white/70 hover:bg-black/50 hover:text-white backdrop-blur-sm"
                                 )}
                             >
