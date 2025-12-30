@@ -4,14 +4,14 @@ import { useQuery } from '@tanstack/react-query';
 import { useStore } from '../../contexts/StoreContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { usePlanLimits } from '../../hooks/usePlanLimits';
-import { Plus, Settings, LogOut, LayoutGrid, LayoutList, Kanban, FolderTree, Share2, Inbox, Braces } from 'lucide-react';
+import { Plus, Settings, LogOut, Share2, Inbox, Braces } from 'lucide-react';
 import { fetchSharedWithMe } from '../../services/api';
 import { SimpleCategoryList } from '../sidebar/SimpleCategoryList';
 import { Button } from './Button';
 import { BlazeLogoText } from './BlazeLogo';
 
 export const Sidebar: React.FC = () => {
-    const { categoryTree, currentView, setCurrentView, user, setCreateCategoryModalOpen, selectedCategoryId, setSelectedCategoryId } = useStore();
+    const { categoryTree, user, setCreateCategoryModalOpen, selectedCategoryId, setSelectedCategoryId } = useStore();
     const { signOut } = useAuth();
     const { usage, limits, usagePercentage } = usePlanLimits();
     const navigate = useNavigate();
@@ -40,44 +40,6 @@ export const Sidebar: React.FC = () => {
             {/* Logo */}
             <div className="h-16 flex items-center px-4 border-b border-border-default cursor-pointer" onClick={() => navigate('/')}>
                 <BlazeLogoText />
-            </div>
-
-            {/* Views Navigation */}
-            <div className="p-3 border-b border-border-subtle">
-                <p className="px-2 text-xs font-semibold text-text-muted uppercase tracking-wider mb-2">Visualização</p>
-                <div className="space-y-1">
-                    <Button
-                        variant={isActiveView('cards') ? 'primary' : 'ghost'}
-                        onClick={() => handleViewChange('cards')}
-                        className={`w-full justify-start gap-3 ${isActiveView('cards') ? 'bg-primary-500/10 text-primary-500 hover:bg-primary-500/20 shadow-none' : 'text-text-secondary'}`}
-                    >
-                        <LayoutGrid className="w-4 h-4" /> Cards
-                    </Button>
-
-                    <Button
-                        variant={isActiveView('table') ? 'primary' : 'ghost'}
-                        onClick={() => handleViewChange('table')}
-                        className={`w-full justify-start gap-3 ${isActiveView('table') ? 'bg-primary-500/10 text-primary-500 hover:bg-primary-500/20 shadow-none' : 'text-text-secondary'}`}
-                    >
-                        <LayoutList className="w-4 h-4" /> Lista
-                    </Button>
-
-                    <Button
-                        variant={isActiveView('kanban') ? 'primary' : 'ghost'}
-                        onClick={() => handleViewChange('kanban')}
-                        className={`w-full justify-start gap-3 ${isActiveView('kanban') ? 'bg-primary-500/10 text-primary-500 hover:bg-primary-500/20 shadow-none' : 'text-text-secondary'}`}
-                    >
-                        <Kanban className="w-4 h-4" /> Kanban
-                    </Button>
-
-                    <Button
-                        variant={isActiveView('folders') ? 'primary' : 'ghost'}
-                        onClick={() => handleViewChange('folders')}
-                        className={`w-full justify-start gap-3 ${isActiveView('folders') ? 'bg-primary-500/10 text-primary-500 hover:bg-primary-500/20 shadow-none' : 'text-text-secondary'}`}
-                    >
-                        <FolderTree className="w-4 h-4" /> Pastas
-                    </Button>
-                </div>
             </div>
 
             {/* Shared Navigation */}

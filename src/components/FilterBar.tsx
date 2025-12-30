@@ -1,5 +1,5 @@
 import { useState, Fragment, useMemo } from 'react';
-import { Filter, Hash, Star, X, ChevronDown, ArrowUpDown, Bot, Check, SlidersHorizontal } from 'lucide-react';
+import { Filter, Hash, Star, X, ChevronDown, ArrowUpDown, Bot, Check, SlidersHorizontal, LayoutGrid, LayoutList, Kanban, FolderTree } from 'lucide-react';
 import { useStore } from '../contexts/StoreContext';
 import clsx from 'clsx';
 import { Menu, Transition, Dialog } from '@headlessui/react';
@@ -32,7 +32,7 @@ function flattenCategories(categories: Category[], depth: number = 0): { categor
 }
 
 export function FilterBar({ filters, availableTags, onFilterChange, onClear }: FilterBarProps) {
-    const { categoryTree } = useStore();
+    const { categoryTree, currentView, setCurrentView } = useStore();
     const [isMobileFilterOpen, setMobileFilterOpen] = useState(false);
 
     const hasActiveFilters = filters.category_id || filters.tags.length > 0 || filters.only_favorites || filters.recommended_ai;
@@ -473,6 +473,30 @@ export function FilterBar({ filters, availableTags, onFilterChange, onClear }: F
                         </select>
                         <ArrowUpDown className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-muted pointer-events-none" />
                         <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-muted pointer-events-none" />
+                    </div>
+
+                    {/* View Selector */}
+                    <div className="flex items-center bg-bg-elevated rounded-lg border border-border-default p-0.5">
+                        {[
+                            { id: 'cards', icon: LayoutGrid, label: 'Cards' },
+                            { id: 'table', icon: LayoutList, label: 'Tabela' },
+                            { id: 'kanban', icon: Kanban, label: 'Kanban' },
+                            { id: 'folders', icon: FolderTree, label: 'Pastas' },
+                        ].map(view => (
+                            <button
+                                key={view.id}
+                                onClick={() => setCurrentView(view.id as any)}
+                                className={clsx(
+                                    "p-1.5 rounded-md transition-all",
+                                    currentView === view.id
+                                        ? "bg-primary-500/20 text-primary-500"
+                                        : "text-text-muted hover:text-text-primary hover:bg-bg-hover"
+                                )}
+                                title={view.label}
+                            >
+                                <view.icon className="w-4 h-4" />
+                            </button>
+                        ))}
                     </div>
                 </div>
 
