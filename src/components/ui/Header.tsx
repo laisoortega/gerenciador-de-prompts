@@ -18,7 +18,7 @@ export const Header: React.FC = () => {
     return (
         <>
             {/* Desktop Header */}
-            <header className="hidden md:flex h-16 bg-bg-surface border-b border-border-subtle items-center justify-between px-6">
+            <header className="hidden lg:flex h-16 bg-bg-surface border-b border-border-subtle items-center justify-between px-6">
                 <div className="flex items-center gap-4 flex-1 mr-4">
                     <h2 className="text-lg font-semibold text-text-primary mr-4 whitespace-nowrap">{currentWorkspace?.name}</h2>
 
@@ -69,8 +69,8 @@ export const Header: React.FC = () => {
                 </div>
             </header>
 
-            {/* Mobile Header */}
-            <header className="md:hidden h-14 bg-bg-surface border-b border-border-subtle flex items-center justify-between px-3 relative z-30">
+            {/* Mobile/Tablet Header */}
+            <header className="lg:hidden h-14 bg-bg-surface border-b border-border-subtle flex items-center justify-between px-3 relative z-30">
                 {/* Mobile Search Overlay */}
                 {isSearchExpanded ? (
                     <div className="absolute inset-0 bg-bg-surface flex items-center px-3 gap-2 z-40 animate-fadeIn">

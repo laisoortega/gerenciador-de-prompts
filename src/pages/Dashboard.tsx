@@ -16,7 +16,8 @@ export const Dashboard: React.FC = () => {
         prompts, currentView, categories, movePrompt, deletePrompt, toggleFavorite,
         searchQuery, setSearchQuery, isCreatePromptModalOpen, setCreatePromptModalOpen,
         selectedCategoryId, setSelectedCategoryId,
-        onlyFavorites, setOnlyFavorites
+        onlyFavorites, setOnlyFavorites,
+        openCreatePromptWithCategory, preSelectedCategoryForModal
     } = useStore();
 
     const [sharingPrompt, setSharingPrompt] = useState<Prompt | null>(null);
@@ -156,8 +157,7 @@ export const Dashboard: React.FC = () => {
                             onDelete={handleDeletePrompt}
                             onCreatePrompt={(categoryId) => {
                                 setEditingPrompt(undefined);
-                                // TODO: Pass categoryId to modal - for now just open modal
-                                setCreatePromptModalOpen(true);
+                                openCreatePromptWithCategory(categoryId);
                             }}
                         />
                     )}

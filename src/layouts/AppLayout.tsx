@@ -16,29 +16,29 @@ export const AppLayout: React.FC = () => {
 
     return (
         <div className="flex h-screen bg-bg-base overflow-hidden relative">
-            {/* Desktop Sidebar */}
-            <div className="hidden md:block">
+            {/* Desktop Sidebar - only on large screens */}
+            <div className="hidden lg:block">
                 <Sidebar />
             </div>
 
-            {/* Mobile Sidebar Overlay */}
+            {/* Mobile/Tablet Sidebar Overlay */}
             {isMobileMenuOpen && (
-                <div className="fixed inset-0 z-40 md:hidden">
+                <div className="fixed inset-0 z-40 lg:hidden">
                     {/* Backdrop */}
                     <div
                         className="absolute inset-0 bg-black/50 backdrop-blur-sm animate-fadeIn"
                         onClick={() => setMobileMenuOpen(false)}
                     />
                     {/* Sidebar Content */}
-                    <div className="absolute left-0 top-0 bottom-0 w-[80%] max-w-sm bg-bg-surface animate-slideRight">
+                    <div className="absolute left-0 top-0 bottom-0 w-[85%] max-w-xs bg-bg-surface animate-slideRight">
                         <Sidebar />
                     </div>
                 </div>
             )}
 
-            <div className="flex-1 flex flex-col min-w-0 mb-[60px] md:mb-0">
+            <div className="flex-1 flex flex-col min-w-0 mb-[60px] lg:mb-0">
                 <Header />
-                <main className="flex-1 overflow-y-auto p-4 md:p-6 scrollbar-thin">
+                <main className="flex-1 overflow-y-auto p-4 lg:p-6 scrollbar-thin">
                     <Outlet />
                 </main>
             </div>

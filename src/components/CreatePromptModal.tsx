@@ -8,12 +8,12 @@ import { VariableLibrary } from './VariableLibrary';
 import { ChevronLeft, ChevronRight, Braces } from 'lucide-react';
 
 export function CreatePromptModal({ onClose, initialData }: { onClose: () => void; initialData?: Prompt }) {
-    const { addPrompt, updatePrompt, activeWorkspaceId, categories, selectedCategoryId } = useStore();
+    const { addPrompt, updatePrompt, activeWorkspaceId, categories, selectedCategoryId, preSelectedCategoryForModal } = useStore();
     const [title, setTitle] = useState(initialData?.title || '');
     const [content, setContent] = useState(initialData?.content || '');
     const [tagsInput, setTagsInput] = useState(initialData?.tags?.join(', ') || '');
     const [recommendedAi, setRecommendedAi] = useState(initialData?.recommended_ai || 'gpt-4');
-    const [categoryId, setCategoryId] = useState<string | null>(initialData?.category_id || selectedCategoryId || null);
+    const [categoryId, setCategoryId] = useState<string | null>(initialData?.category_id || preSelectedCategoryForModal || selectedCategoryId || null);
     const [detectedVariables, setDetectedVariables] = useState<{ name: string, default?: string }[]>([]);
     const [showLibrary, setShowLibrary] = useState(false);
     const [mobileTab, setMobileTab] = useState<'form' | 'variables'>('form');

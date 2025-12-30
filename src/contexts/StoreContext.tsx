@@ -58,6 +58,8 @@ interface StoreContextType {
     setCreatePromptModalOpen: (isOpen: boolean) => void;
     isCreateCategoryModalOpen: boolean;
     setCreateCategoryModalOpen: (isOpen: boolean) => void;
+    preSelectedCategoryForModal: string | null;
+    openCreatePromptWithCategory: (categoryId: string | null) => void;
     isMobileMenuOpen: boolean;
     setMobileMenuOpen: (isOpen: boolean) => void;
     editingCategory: Category | undefined;
@@ -91,6 +93,7 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     // Modals
     const [isCreatePromptModalOpen, setCreatePromptModalOpen] = useState(false);
     const [isCreateCategoryModalOpen, setCreateCategoryModalOpen] = useState(false);
+    const [preSelectedCategoryForModal, setPreSelectedCategoryForModal] = useState<string | null>(null);
     const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [editingCategory, setEditingCategory] = useState<Category | undefined>(undefined);
 
@@ -102,13 +105,18 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
             setIsLoadingUser(true);
 
             if (authUser) {
+                // Determine role based on email (temporary solution - should use profiles table in production)
+                const isAdmin = authUser.email?.includes('admin') ||
+                    authUser.email === 'elio.primage@gmail.com' ||
+                    authUser.email === 'lais@blaze.com';
+
                 // Create internal user object from auth user
                 setUser({
                     id: authUser.id,
                     email: authUser.email || '',
                     name: authUser.user_metadata?.name || authUser.email?.split('@')[0] || 'Usuário',
                     plan_id: 'free',
-                    role: 'user',
+                    role: isAdmin ? 'admin' : 'user',
                     onboarding_completed: true
                 } as User);
 
@@ -300,6 +308,11 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
             addCategory, updateCategory, deleteCategory, toggleCategoryExpand, moveCategory,
             setActiveWorkspaceId, addWorkspace, updateWorkspace, deleteWorkspace, setCurrentView, setSearchQuery,
             isCreatePromptModalOpen, setCreatePromptModalOpen, isCreateCategoryModalOpen, setCreateCategoryModalOpen,
+            preSelectedCategoryForModal,
+            openCreatePromptWithCategory: (categoryId: string | null) => {
+                setPreSelectedCategoryForModal(categoryId);
+                setCreatePromptModalOpen(true);
+            },
             isMobileMenuOpen, setMobileMenuOpen,
             editingCategory, setEditingCategory,
             categoryTree,

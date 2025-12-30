@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Mail, Lock, User, Loader2, ArrowLeft } from 'lucide-react';
 import { BlazeLogo } from '../components/ui/BlazeLogo';
+import { translateSupabaseError } from '../utils/translateError';
 
 export function LoginPage() {
     const [mode, setMode] = useState<'login' | 'signup' | 'forgot'>('login');
@@ -25,21 +26,21 @@ export function LoginPage() {
             if (mode === 'forgot') {
                 const { error } = await resetPassword(email);
                 if (error) {
-                    setError(error.message);
+                    setError(translateSupabaseError(error.message));
                 } else {
                     setSuccess('Email de recuperação enviado! Verifique sua caixa de entrada.');
                 }
             } else if (mode === 'signup') {
                 const { error } = await signUp(email, password, name);
                 if (error) {
-                    setError(error.message);
+                    setError(translateSupabaseError(error.message));
                 } else {
                     setSuccess('Verifique seu email para confirmar a conta!');
                 }
             } else {
                 const { error } = await signIn(email, password);
                 if (error) {
-                    setError(error.message);
+                    setError(translateSupabaseError(error.message));
                 } else {
                     navigate('/');
                 }

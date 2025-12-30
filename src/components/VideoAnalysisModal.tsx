@@ -20,7 +20,7 @@ export function VideoAnalysisModal({ onClose }: VideoAnalysisModalProps) {
                     </div>
                 </div>
             </Modal.Header>
-            <Modal.Body className="p-6">
+            <Modal.Body>
                 <VideoAnalyzer onClose={onClose} />
             </Modal.Body>
         </Modal>

@@ -28,7 +28,7 @@ export function Modal({ open = true, onClose, children, size = 'md' }: ModalProp
                 </Transition.Child>
 
                 {/* Container */}
-                <div className="fixed inset-0 flex w-screen items-end md:items-center justify-center md:p-4">
+                <div className="fixed inset-0 flex w-screen items-end sm:items-center justify-center p-3 sm:p-4">
                     <Transition.Child
                         as={Fragment}
                         enter="ease-out duration-300"
@@ -43,21 +43,21 @@ export function Modal({ open = true, onClose, children, size = 'md' }: ModalProp
                             className={clsx(
                                 // Base styles
                                 "w-full bg-bg-surface shadow-xl ring-1 ring-white/10 overflow-hidden flex flex-col",
-                                // Mobile: full height, rounded top only
-                                "h-[95vh] rounded-t-2xl",
-                                // Desktop: auto height, fully rounded, max-height limited
-                                "md:h-auto md:rounded-2xl md:max-h-[90vh]",
-                                // Size variants (only apply on desktop)
+                                // Mobile: max height with margin, rounded corners
+                                "max-h-[90vh] rounded-2xl",
+                                // Tablet+: auto height, max-height limited
+                                "sm:h-auto sm:max-h-[85vh]",
+                                // Size variants
                                 {
-                                    'md:max-w-sm': size === 'sm',
-                                    'md:max-w-md': size === 'md',
-                                    'md:max-w-2xl': size === 'lg',
-                                    'md:max-w-4xl': size === 'xl',
+                                    'sm:max-w-sm': size === 'sm',
+                                    'sm:max-w-md': size === 'md',
+                                    'sm:max-w-2xl': size === 'lg',
+                                    'sm:max-w-4xl': size === 'xl',
                                 }
                             )}
                         >
                             {/* Mobile drag handle */}
-                            <div className="md:hidden flex justify-center py-2 bg-bg-surface">
+                            <div className="sm:hidden flex justify-center py-2 bg-bg-surface">
                                 <div className="w-10 h-1 rounded-full bg-border-default" />
                             </div>
 
@@ -86,7 +86,7 @@ Modal.Header = ({ children, className }: { children: React.ReactNode; className?
 )
 
 Modal.Body = ({ children, className }: { children: React.ReactNode; className?: string }) => (
-    <div className={clsx("flex-1 overflow-y-auto scroll-mobile", className)}>
+    <div className={clsx("flex-1 overflow-y-auto scroll-mobile p-4 md:p-6", className)}>
         {children}
     </div>
 )

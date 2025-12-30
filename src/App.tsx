@@ -17,8 +17,17 @@ import { Settings } from './pages/Settings';
 import { SettingsVariables } from './pages/SettingsVariables';
 import { Subscription } from './pages/Subscription';
 import { Notifications } from './pages/Notifications';
+import { AdminSettings } from './pages/admin/AdminSettings';
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+    defaultOptions: {
+        queries: {
+            refetchOnWindowFocus: false, // Desativa refresh ao voltar para janela
+            staleTime: 1000 * 60 * 5, // 5 minutos
+            retry: 1,
+        },
+    },
+});
 
 const AppRoutes: React.FC = () => {
     const { user: authUser, isLoading: authLoading, isRecoveryMode } = useAuth();
@@ -70,11 +79,11 @@ const AppRoutes: React.FC = () => {
             </Route>
 
             {/* Admin Routes */}
-            <Route path="/admin" element={storeUser?.role === 'admin' ? <AdminLayout /> : <Navigate to="/" />}>
+            <Route path="/admin" element={storeUser?.role === 'admin' || storeUser?.role === 'super_admin' ? <AdminLayout /> : <Navigate to="/" />}>
                 <Route index element={<AdminDashboard />} />
                 <Route path="users" element={<UserManagement />} />
                 <Route path="plans" element={<PlanManagement />} />
-                <Route path="settings" element={<div>Configurações (Em breve)</div>} />
+                <Route path="settings" element={<AdminSettings />} />
             </Route>
 
             <Route path="/login" element={<Navigate to="/" />} />

@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { Lock, Loader2, CheckCircle } from 'lucide-react';
 import { BlazeLogo } from '../components/ui/BlazeLogo';
+import { translateSupabaseError } from '../utils/translateError';
 
 export function ResetPasswordPage() {
     const [password, setPassword] = useState('');
@@ -41,14 +42,14 @@ export function ResetPasswordPage() {
             });
 
             if (error) {
-                setError(error.message);
+                setError(translateSupabaseError(error.message));
             } else {
                 setSuccess(true);
                 clearRecoveryMode(); // Clear recovery mode so app redirects to dashboard
                 setTimeout(() => navigate('/'), 2000);
             }
         } catch (err: any) {
-            setError(err.message);
+            setError(translateSupabaseError(err.message));
         } finally {
             setIsLoading(false);
         }
