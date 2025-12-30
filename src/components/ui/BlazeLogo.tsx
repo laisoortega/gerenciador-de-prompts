@@ -38,9 +38,17 @@ export function BlazeLogo({ size = 32, className = '' }: BlazeLogoProps) {
 
 export function BlazeLogoText({ className = '' }: { className?: string }) {
     return (
-        <div className={`flex items-center gap-2 ${className}`}>
-            <BlazeLogo size={28} />
-            <span className="font-bold text-lg text-text-primary tracking-tight">Blaze</span>
+        <div className={`flex items-center gap-2.5 ${className}`}>
+            <div className="relative">
+                <BlazeLogo size={30} />
+                {/* Glow effect */}
+                <div className="absolute inset-0 blur-lg opacity-50">
+                    <BlazeLogo size={30} />
+                </div>
+            </div>
+            <span className="font-bold text-xl text-text-primary tracking-tight" style={{ fontFamily: "'Outfit', sans-serif" }}>
+                Blaze
+            </span>
         </div>
     );
 }

@@ -20,7 +20,7 @@ export const CardsView: React.FC<CardsViewProps> = ({ prompts, onShare, onEdit, 
                 <div
                     key={prompt.id}
                     onClick={() => onEdit && onEdit(prompt)}
-                    className="bg-bg-surface border border-border-subtle rounded-xl p-4 md:p-5 hover:border-primary-500/50 hover:shadow-lg transition-all group cursor-pointer flex flex-col h-full active:scale-[0.99] relative"
+                    className="bg-bg-surface border border-border-subtle rounded-2xl p-4 md:p-5 transition-all duration-300 group cursor-pointer flex flex-col h-full active:scale-[0.98] relative hover:-translate-y-1 hover:border-primary-500/40 hover:shadow-[0_10px_40px_rgba(0,0,0,0.4),0_0_30px_rgba(249,115,22,0.1)]"
                 >
                     {/* Header: Category + Favorite */}
                     <div className="flex justify-between items-start mb-3 gap-2">
