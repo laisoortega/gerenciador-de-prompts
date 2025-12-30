@@ -12,6 +12,7 @@ interface CardsViewProps {
     onDelete?: (prompt: Prompt) => void;
     onUse?: (prompt: Prompt) => void;
     onToggleFavorite?: (prompt: Prompt) => void;
+    onView?: (prompt: Prompt) => void;
 }
 
 // Gradients por categoria para visual único
@@ -63,7 +64,7 @@ function getAiBadge(ai?: string): { label: string; color: string } {
     return aiBadges[ai] || aiBadges.default;
 }
 
-export const CardsView: React.FC<CardsViewProps> = ({ prompts, onShare, onEdit, onDelete, onUse, onToggleFavorite }) => {
+export const CardsView: React.FC<CardsViewProps> = ({ prompts, onShare, onEdit, onDelete, onUse, onToggleFavorite, onView }) => {
     return (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
             {prompts.map(prompt => {
@@ -109,8 +110,11 @@ export const CardsView: React.FC<CardsViewProps> = ({ prompts, onShare, onEdit, 
                             <Sparkles className="absolute bottom-2 right-2 w-4 h-4 text-white/40" />
                         </div>
 
-                        {/* Conteúdo */}
-                        <div className="p-4 flex-1 flex flex-col">
+                        {/* Conteúdo - Clicável para visualizar */}
+                        <div
+                            className="p-4 flex-1 flex flex-col cursor-pointer hover:bg-bg-hover/30 transition-colors"
+                            onClick={() => onView && onView(prompt)}
+                        >
                             {/* Título */}
                             <h3 className="font-bold text-text-primary mb-1 line-clamp-1 text-base">
                                 {prompt.title}
@@ -125,8 +129,10 @@ export const CardsView: React.FC<CardsViewProps> = ({ prompts, onShare, onEdit, 
                             <p className="text-sm text-text-secondary line-clamp-2 mb-4 flex-1">
                                 {prompt.content}
                             </p>
+                        </div>
 
-                            {/* Footer: Tags + Stats + Actions */}
+                        {/* Footer: Tags + Stats + Actions - Fora da área clicável */}
+                        <div className="px-4 pb-4">
                             <div className="flex items-center justify-between pt-3 border-t border-border-subtle gap-2">
                                 {/* Tags */}
                                 <div className="flex gap-1 overflow-hidden flex-1">
@@ -218,6 +224,6 @@ export const CardsView: React.FC<CardsViewProps> = ({ prompts, onShare, onEdit, 
                     </div>
                 );
             })}
-        </div>
+        </div >
     );
 };

@@ -7,6 +7,7 @@ import { FilterBar } from '../components/FilterBar';
 import { CreatePromptModal } from '../components/CreatePromptModal';
 import { SharePromptModal } from '../components/SharePromptModal';
 import { UsePromptModal } from '../components/UsePromptModal';
+import { ViewPromptModal } from '../components/ViewPromptModal';
 import { UpgradePlanModal } from '../components/UpgradePlanModal';
 import { CardsView } from '../components/views/CardsView';
 import { TableView } from '../components/views/TableView';
@@ -27,6 +28,7 @@ export const Dashboard: React.FC = () => {
     const [sharingPrompt, setSharingPrompt] = useState<Prompt | null>(null);
     const [editingPrompt, setEditingPrompt] = useState<Prompt | undefined>(undefined);
     const [usingPrompt, setUsingPrompt] = useState<Prompt | null>(null);
+    const [viewingPrompt, setViewingPrompt] = useState<Prompt | null>(null);
     const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
     // Local filter state for advanced filters
@@ -157,6 +159,7 @@ export const Dashboard: React.FC = () => {
                             onDelete={handleDeletePrompt}
                             onUse={setUsingPrompt}
                             onToggleFavorite={(p) => toggleFavorite(p.id)}
+                            onView={setViewingPrompt}
                         />
                     )}
                     {currentView === 'table' && (
@@ -215,6 +218,33 @@ export const Dashboard: React.FC = () => {
                     limitType="prompts"
                     currentUsage={usage.promptCount}
                     currentLimit={limits.maxPrompts}
+                />
+            )}
+
+            {/* Modal de visualização do prompt */}
+            {viewingPrompt && (
+                <ViewPromptModal
+                    prompt={viewingPrompt}
+                    onClose={() => setViewingPrompt(null)}
+                    onEdit={() => {
+                        setViewingPrompt(null);
+                        handleEditPrompt(viewingPrompt);
+                    }}
+                    onShare={() => {
+                        setViewingPrompt(null);
+                        setSharingPrompt(viewingPrompt);
+                    }}
+                    onDelete={() => {
+                        setViewingPrompt(null);
+                        handleDeletePrompt(viewingPrompt);
+                    }}
+                    onUse={() => {
+                        setViewingPrompt(null);
+                        setUsingPrompt(viewingPrompt);
+                    }}
+                    onToggleFavorite={() => {
+                        toggleFavorite(viewingPrompt.id);
+                    }}
                 />
             )}
         </div>
