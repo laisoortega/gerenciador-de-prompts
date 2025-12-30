@@ -651,3 +651,154 @@
     margin: 0 !important;
   }
 }
+
+/* ============================================
+   PREMIUM EFFECTS - SpaceX/Mont-Fort Inspired
+   ============================================ */
+
+/* Cinematic Hover - cards/buttons elevam com sombra */
+.hover-lift {
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.hover-lift:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.5),
+    0 0 40px rgba(249, 115, 22, 0.1);
+}
+
+/* Glow Pulse - para elementos de destaque */
+.glow-pulse {
+  animation: glowPulse 2s ease-in-out infinite;
+}
+
+@keyframes glowPulse {
+
+  0%,
+  100% {
+    box-shadow: 0 0 20px var(--primary-glow);
+  }
+
+  50% {
+    box-shadow: 0 0 40px var(--primary-glow), 0 0 60px var(--primary-glow);
+  }
+}
+
+/* Fade In Slow - entrada cinematográfica */
+.animate-fadeInSlow {
+  animation: fadeInSlow 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fadeInSlow {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Stagger Animation - para listas */
+.stagger-1 {
+  animation-delay: 0.1s;
+}
+
+.stagger-2 {
+  animation-delay: 0.2s;
+}
+
+.stagger-3 {
+  animation-delay: 0.3s;
+}
+
+.stagger-4 {
+  animation-delay: 0.4s;
+}
+
+.stagger-5 {
+  animation-delay: 0.5s;
+}
+
+/* Focus Glow - inputs com glow maior */
+.focus-glow:focus {
+  box-shadow: 0 0 0 2px var(--bg-base), 0 0 20px var(--primary-glow);
+}
+
+/* Text Glow - títulos com glow sutil */
+.text-glow {
+  text-shadow: 0 0 30px var(--primary-glow);
+}
+
+/* Border Accent - borda com gradiente */
+.border-accent {
+  border-image: linear-gradient(90deg, transparent, var(--primary-500), transparent) 1;
+}
+
+/* High Contrast Utilities */
+.contrast-high {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+/* Generous Spacing */
+.space-generous {
+  padding: 2rem;
+  margin-bottom: 2rem;
+}
+
+/* Card Premium - estilo Mont-Fort */
+.card-premium {
+  background: linear-gradient(180deg, var(--bg-surface) 0%, var(--bg-elevated) 100%);
+  border: 1px solid var(--border-subtle);
+  border-radius: 1.5rem;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.card-premium:hover {
+  border-color: var(--primary-500);
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5),
+    0 0 30px var(--primary-glow);
+  transform: translateY(-4px);
+}
+
+/* Button Cinematic */
+.btn-cinematic {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-cinematic::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transform: translateX(-100%);
+  transition: transform 0.6s;
+}
+
+.btn-cinematic:hover::after {
+  transform: translateX(100%);
+}
+
+/* Section Hero - para seções principais */
+.section-hero {
+  position: relative;
+  padding: 4rem 0;
+}
+
+.section-hero::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--primary-500), transparent);
+  opacity: 0.5;
+}
