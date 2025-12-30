@@ -18,7 +18,7 @@ export const Header: React.FC = () => {
     return (
         <>
             {/* Desktop Header */}
-            <header className="hidden lg:flex h-16 bg-bg-surface border-b border-border-subtle items-center justify-between px-6">
+            <header className="hidden lg:flex h-16 bg-bg-surface border-b border-border-subtle items-center justify-between px-6 relative header-accent">
                 <div className="flex items-center gap-4 flex-1 mr-4">
                     <h2 className="text-lg font-semibold text-text-primary mr-4 whitespace-nowrap">{currentWorkspace?.name}</h2>
 

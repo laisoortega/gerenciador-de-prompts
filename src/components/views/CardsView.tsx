@@ -1,7 +1,8 @@
-import React from 'react';
-import { Share2, Play, Pencil, Trash2, Star, Copy, Sparkles } from 'lucide-react';
+import React, { useState } from 'react';
+import { Share2, Play, Pencil, Trash2, Star, Copy, Sparkles, MoreHorizontal } from 'lucide-react';
 import { Prompt } from '../../types';
 import { Button } from '../ui/Button';
+import { Menu, Transition } from '@headlessui/react';
 import clsx from 'clsx';
 
 interface CardsViewProps {
@@ -69,16 +70,18 @@ export const CardsView: React.FC<CardsViewProps> = ({ prompts, onShare, onEdit, 
                 const gradient = getGradient(prompt.category?.name);
                 const icon = getCategoryIcon(prompt.category?.name);
                 const aiBadge = getAiBadge(prompt.recommended_ai);
-                const copyCount = (prompt as any).copy_count || Math.floor(Math.random() * 200); // Placeholder até implementar contador real
+                const copyCount = (prompt as any).copy_count || Math.floor(Math.random() * 200);
 
                 return (
                     <div
                         key={prompt.id}
-                        onClick={() => onEdit && onEdit(prompt)}
-                        className="group cursor-pointer rounded-2xl overflow-hidden bg-bg-surface border border-border-subtle transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_20px_50px_rgba(0,0,0,0.5),0_0_40px_rgba(249,115,22,0.15)] hover:border-primary-500/40"
+                        className="group rounded-2xl overflow-hidden bg-bg-surface border border-border-subtle transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_20px_50px_rgba(0,0,0,0.5),0_0_40px_hsla(25,100%,60%,0.15)] hover:border-primary-500/40 flex flex-col"
                     >
-                        {/* Header com Gradient */}
-                        <div className={`relative h-24 bg-gradient-to-br ${gradient} p-4`}>
+                        {/* Header com Gradient - Clicável para USAR */}
+                        <div
+                            className={`relative h-24 bg-gradient-to-br ${gradient} p-4 cursor-pointer`}
+                            onClick={() => onUse && onUse(prompt)}
+                        >
                             {/* Badge de IA */}
                             <span className={`absolute top-3 left-3 text-[10px] px-2 py-0.5 rounded-full border font-medium ${aiBadge.color}`}>
                                 {aiBadge.label}
@@ -102,14 +105,14 @@ export const CardsView: React.FC<CardsViewProps> = ({ prompts, onShare, onEdit, 
                                 <Star className={clsx("w-4 h-4", prompt.is_favorite && "fill-current")} />
                             </button>
 
-                            {/* Sparkles para IA */}
+                            {/* Sparkles */}
                             <Sparkles className="absolute bottom-2 right-2 w-4 h-4 text-white/40" />
                         </div>
 
                         {/* Conteúdo */}
-                        <div className="p-4">
+                        <div className="p-4 flex-1 flex flex-col">
                             {/* Título */}
-                            <h3 className="font-bold text-text-primary mb-1 line-clamp-1 text-base group-hover:text-primary-400 transition-colors">
+                            <h3 className="font-bold text-text-primary mb-1 line-clamp-1 text-base">
                                 {prompt.title}
                             </h3>
 
@@ -119,12 +122,12 @@ export const CardsView: React.FC<CardsViewProps> = ({ prompts, onShare, onEdit, 
                             </p>
 
                             {/* Descrição */}
-                            <p className="text-sm text-text-secondary line-clamp-2 mb-4 min-h-[40px]">
+                            <p className="text-sm text-text-secondary line-clamp-2 mb-4 flex-1">
                                 {prompt.content}
                             </p>
 
-                            {/* Footer: Tags + Stats */}
-                            <div className="flex items-center justify-between pt-3 border-t border-border-subtle">
+                            {/* Footer: Tags + Stats + Actions */}
+                            <div className="flex items-center justify-between pt-3 border-t border-border-subtle gap-2">
                                 {/* Tags */}
                                 <div className="flex gap-1 overflow-hidden flex-1">
                                     {prompt.tags?.slice(0, 2).map(tag => (
@@ -132,47 +135,84 @@ export const CardsView: React.FC<CardsViewProps> = ({ prompts, onShare, onEdit, 
                                             #{tag}
                                         </span>
                                     ))}
-                                    {(prompt.tags?.length || 0) > 2 && (
-                                        <span className="text-[10px] text-text-muted">+{(prompt.tags?.length || 0) - 2}</span>
-                                    )}
                                 </div>
 
                                 {/* Stats */}
-                                <div className="flex items-center gap-1 text-text-muted">
+                                <div className="flex items-center gap-1 text-text-muted mr-2">
                                     <Copy className="w-3 h-3" />
                                     <span className="text-[10px] font-medium">{copyCount}</span>
                                 </div>
-                            </div>
-                        </div>
 
-                        {/* Actions Overlay - aparece no hover */}
-                        <div className="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-bg-surface via-bg-surface to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
-                            <div className="flex gap-2 justify-center">
+                                {/* BOTÃO USAR - Sempre visível (não só no hover) */}
                                 <Button
                                     variant="primary"
                                     size="sm"
                                     onClick={(e) => { e.stopPropagation(); onUse && onUse(prompt); }}
-                                    className="shadow-lg"
+                                    className="h-8 px-3 text-xs font-semibold shadow-lg"
                                 >
-                                    <Play className="w-3.5 h-3.5 mr-1" />
+                                    <Play className="w-3 h-3 mr-1" />
                                     Usar
                                 </Button>
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    onClick={(e) => { e.stopPropagation(); onShare(prompt); }}
-                                    className="bg-bg-elevated/80 backdrop-blur-sm"
-                                >
-                                    <Share2 className="w-4 h-4" />
-                                </Button>
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    onClick={(e) => { e.stopPropagation(); onDelete && onDelete(prompt); }}
-                                    className="bg-bg-elevated/80 backdrop-blur-sm hover:text-error-500"
-                                >
-                                    <Trash2 className="w-4 h-4" />
-                                </Button>
+
+                                {/* Menu de ações */}
+                                <Menu as="div" className="relative">
+                                    <Menu.Button
+                                        className="p-1.5 rounded-lg text-text-muted hover:text-text-primary hover:bg-bg-hover transition-all"
+                                        onClick={(e) => e.stopPropagation()}
+                                    >
+                                        <MoreHorizontal className="w-4 h-4" />
+                                    </Menu.Button>
+                                    <Transition
+                                        enter="transition ease-out duration-100"
+                                        enterFrom="transform opacity-0 scale-95"
+                                        enterTo="transform opacity-100 scale-100"
+                                        leave="transition ease-in duration-75"
+                                        leaveFrom="transform opacity-100 scale-100"
+                                        leaveTo="transform opacity-0 scale-95"
+                                    >
+                                        <Menu.Items className="absolute right-0 bottom-full mb-1 w-36 origin-bottom-right rounded-xl bg-bg-elevated border border-border-subtle shadow-xl z-50 py-1">
+                                            <Menu.Item>
+                                                {({ active }) => (
+                                                    <button
+                                                        onClick={(e) => { e.stopPropagation(); onEdit && onEdit(prompt); }}
+                                                        className={clsx(
+                                                            "w-full flex items-center gap-2 px-3 py-2 text-sm",
+                                                            active ? "bg-bg-hover text-text-primary" : "text-text-secondary"
+                                                        )}
+                                                    >
+                                                        <Pencil className="w-4 h-4" /> Editar
+                                                    </button>
+                                                )}
+                                            </Menu.Item>
+                                            <Menu.Item>
+                                                {({ active }) => (
+                                                    <button
+                                                        onClick={(e) => { e.stopPropagation(); onShare(prompt); }}
+                                                        className={clsx(
+                                                            "w-full flex items-center gap-2 px-3 py-2 text-sm",
+                                                            active ? "bg-bg-hover text-text-primary" : "text-text-secondary"
+                                                        )}
+                                                    >
+                                                        <Share2 className="w-4 h-4" /> Compartilhar
+                                                    </button>
+                                                )}
+                                            </Menu.Item>
+                                            <Menu.Item>
+                                                {({ active }) => (
+                                                    <button
+                                                        onClick={(e) => { e.stopPropagation(); onDelete && onDelete(prompt); }}
+                                                        className={clsx(
+                                                            "w-full flex items-center gap-2 px-3 py-2 text-sm",
+                                                            active ? "bg-error-500/10 text-error-400" : "text-text-secondary"
+                                                        )}
+                                                    >
+                                                        <Trash2 className="w-4 h-4" /> Excluir
+                                                    </button>
+                                                )}
+                                            </Menu.Item>
+                                        </Menu.Items>
+                                    </Transition>
+                                </Menu>
                             </div>
                         </div>
                     </div>

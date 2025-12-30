@@ -26,17 +26,8 @@ export const Sidebar: React.FC = () => {
 
     const sharedCount = (sharedData?.activeCount || 0) + (sharedData?.pendingCount || 0);
 
-    const handleViewChange = (view: any) => {
-        if (location.pathname !== '/') {
-            navigate('/');
-        }
-        setCurrentView(view);
-    };
-
-    const isActiveView = (view: string) => location.pathname === '/' && currentView === view;
-
     return (
-        <aside className="w-64 bg-bg-surface border-r border-border-subtle h-screen flex flex-col">
+        <aside className="w-64 sidebar-gradient border-r border-border-subtle h-screen flex flex-col">
             {/* Logo */}
             <div className="h-16 flex items-center px-4 border-b border-border-default cursor-pointer" onClick={() => navigate('/')}>
                 <BlazeLogoText />
