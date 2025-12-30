@@ -1,28 +1,45 @@
 import React, { useState } from 'react';
-import { Search, Plus, Bell, Sparkles, Moon, Sun, X, Menu } from 'lucide-react';
+import { Search, Plus, Bell, Sparkles, Moon, Sun, X, Menu, Inbox, Braces, FolderOpen, Users } from 'lucide-react';
 import { useStore } from '../../contexts/StoreContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { VideoAnalysisModal } from '../VideoAnalysisModal';
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from './Button';
 import { Input } from './Input';
+import { BlazeLogoText } from './BlazeLogo';
+import clsx from 'clsx';
+
+const navTabs = [
+    { id: 'prompts', label: 'Meus Prompts', path: '/', icon: FolderOpen },
+    { id: 'shared', label: 'Compartilhados', path: '/shared-with-me', icon: Users },
+    { id: 'variables', label: 'Variáveis', path: '/variables', icon: Braces },
+];
 
 export const Header: React.FC = () => {
     const { setTheme, theme } = useTheme();
-    const { activeWorkspaceId, workspaces, searchQuery, setSearchQuery, setCreatePromptModalOpen, setMobileMenuOpen } = useStore();
+    const { searchQuery, setSearchQuery, setCreatePromptModalOpen, setMobileMenuOpen } = useStore();
     const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
     const [isSearchExpanded, setIsSearchExpanded] = useState(false);
+    const location = useLocation();
+    const navigate = useNavigate();
 
-    const currentWorkspace = workspaces.find(w => w.id === activeWorkspaceId);
+    const currentTab = navTabs.find(tab => tab.path === location.pathname)?.id || 'prompts';
 
     return (
         <>
             {/* Desktop Header */}
-            <header className="hidden lg:flex h-16 bg-bg-surface border-b border-border-subtle items-center justify-between px-6 relative header-accent">
-                <div className="flex items-center gap-4 flex-1 mr-4">
-                    <h2 className="text-lg font-semibold text-text-primary mr-4 whitespace-nowrap">{currentWorkspace?.name}</h2>
+            <header className="hidden lg:flex flex-col bg-bg-surface border-b border-border-subtle relative header-accent">
+                {/* Top Row: Logo + Search + Actions */}
+                <div className="h-14 flex items-center justify-between px-6">
+                    {/* Logo */}
+                    <div className="flex items-center gap-6">
+                        <Link to="/" className="flex items-center">
+                            <BlazeLogoText />
+                        </Link>
+                    </div>
 
-                    <div className="max-w-md w-full">
+                    {/* Search - Centralizado */}
+                    <div className="flex-1 max-w-xl mx-8">
                         <Input
                             placeholder="Buscar prompts (Ctrl+K)..."
                             value={searchQuery}
@@ -31,42 +48,66 @@ export const Header: React.FC = () => {
                             className="bg-bg-elevated border-none focus-visible:ring-1"
                         />
                     </div>
+
+                    {/* Actions */}
+                    <div className="flex items-center gap-3">
+                        <Button
+                            variant="secondary"
+                            onClick={() => setIsVideoModalOpen(true)}
+                            className="gap-2"
+                        >
+                            <Sparkles className="w-4 h-4 text-accent-500" />
+                            <span className="hidden xl:inline">Analisar Vídeo</span>
+                        </Button>
+
+                        <div className="w-px h-6 bg-border-subtle mx-1"></div>
+
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                        >
+                            {theme === 'dark' ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
+                        </Button>
+
+                        <Link to="/notifications" className="relative p-2 rounded-xl text-text-secondary hover:text-text-primary hover:bg-bg-hover transition-all">
+                            <Bell className="w-5 h-5" />
+                            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-error-500 rounded-full"></span>
+                        </Link>
+
+                        <Button
+                            variant="primary"
+                            onClick={() => setCreatePromptModalOpen(true)}
+                            className="gap-2"
+                        >
+                            <Plus className="w-4 h-4" />
+                            <span className="hidden xl:inline">Novo Prompt</span>
+                        </Button>
+                    </div>
                 </div>
 
-                <div className="flex items-center gap-3">
-                    <Button
-                        variant="secondary"
-                        onClick={() => setIsVideoModalOpen(true)}
-                        className="gap-2"
-                    >
-                        <Sparkles className="w-4 h-4 text-accent-500" />
-                        <span className="hidden sm:inline">Analisar Vídeo</span>
-                    </Button>
-
-                    <div className="w-px h-6 bg-border-subtle mx-1"></div>
-
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-                    >
-                        {theme === 'dark' ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
-                    </Button>
-
-                    <Link to="/notifications" className="relative p-2 rounded-xl text-text-secondary hover:text-text-primary hover:bg-bg-hover transition-all">
-                        <Bell className="w-5 h-5" />
-                        <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-error-500 rounded-full"></span>
-                    </Link>
-
-                    <Button
-                        variant="primary"
-                        onClick={() => setCreatePromptModalOpen(true)}
-                        className="gap-2"
-                    >
-                        <Plus className="w-4 h-4" />
-                        <span className="hidden sm:inline">Novo Prompt</span>
-                    </Button>
-                </div>
+                {/* Bottom Row: Navigation Tabs */}
+                <nav className="h-11 flex items-center px-6 gap-1">
+                    {navTabs.map(tab => {
+                        const Icon = tab.icon;
+                        const isActive = currentTab === tab.id;
+                        return (
+                            <button
+                                key={tab.id}
+                                onClick={() => navigate(tab.path)}
+                                className={clsx(
+                                    "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all",
+                                    isActive
+                                        ? "bg-primary-500/10 text-primary-500"
+                                        : "text-text-secondary hover:text-text-primary hover:bg-bg-hover"
+                                )}
+                            >
+                                <Icon className="w-4 h-4" />
+                                {tab.label}
+                            </button>
+                        );
+                    })}
+                </nav>
             </header>
 
             {/* Mobile/Tablet Header */}
@@ -104,10 +145,10 @@ export const Header: React.FC = () => {
                             <Menu className="w-5 h-5" />
                         </button>
 
-                        {/* Center: Title */}
-                        <h2 className="text-base font-semibold text-text-primary truncate max-w-[140px]">
-                            {currentWorkspace?.name || 'PromptMaster'}
-                        </h2>
+                        {/* Center: Logo */}
+                        <Link to="/">
+                            <BlazeLogoText />
+                        </Link>
 
                         {/* Right: Actions */}
                         <div className="flex items-center gap-1">
