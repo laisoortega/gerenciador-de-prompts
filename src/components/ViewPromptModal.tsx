@@ -113,7 +113,7 @@ export function ViewPromptModal({
                     className={clsx(
                         "absolute top-4 right-4 w-10 h-10 rounded-full flex items-center justify-center transition-all",
                         prompt.is_favorite
-                            ? "bg-yellow-400 text-yellow-900 shadow-lg"
+                            ? "bg-primary-500 text-white shadow-lg"
                             : "bg-black/30 text-white/70 hover:bg-black/50 backdrop-blur-sm"
                     )}
                 >

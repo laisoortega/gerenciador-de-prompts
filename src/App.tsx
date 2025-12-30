@@ -7,6 +7,7 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { LoginPage } from './pages/LoginPage';
 import { ResetPasswordPage } from './pages/ResetPasswordPage';
 import { Dashboard } from './pages/Dashboard';
+import { HomePage } from './pages/HomePage';
 import { AppLayout } from './layouts/AppLayout';
 import { AdminLayout } from './layouts/AdminLayout';
 import SharedWithMePage from './pages/SharedWithMe';
@@ -70,7 +71,8 @@ const AppRoutes: React.FC = () => {
     return (
         <Routes>
             <Route element={<AppLayout />}>
-                <Route path="/" element={<Dashboard />} />
+                <Route path="/" element={<HomePage />} />
+                <Route path="/prompts" element={<Dashboard />} />
                 <Route path="/shared-with-me" element={<SharedWithMePage />} />
                 <Route path="/settings" element={<Settings />} />
                 <Route path="/settings/variables" element={<SettingsVariables />} />

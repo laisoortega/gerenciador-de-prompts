@@ -10,7 +10,8 @@ import { BlazeLogoText } from './BlazeLogo';
 import clsx from 'clsx';
 
 const navTabs = [
-    { id: 'prompts', label: 'Meus Prompts', path: '/', icon: FolderOpen },
+    { id: 'home', label: 'Dashboard', path: '/', icon: Inbox },
+    { id: 'prompts', label: 'Meus Prompts', path: '/prompts', icon: FolderOpen },
     { id: 'shared', label: 'Compartilhados', path: '/shared-with-me', icon: Users },
     { id: 'variables', label: 'Variáveis', path: '/settings/variables', icon: Braces },
 ];

@@ -127,7 +127,7 @@ export const Notifications: React.FC = () => {
         switch (type) {
             case 'share': return <UserPlus className="w-5 h-5 text-blue-500" />;
             case 'system': return <Gift className="w-5 h-5 text-purple-500" />;
-            case 'subscription': return <AlertCircle className="w-5 h-5 text-yellow-500" />;
+            case 'subscription': return <AlertCircle className="w-5 h-5 text-accent-500" />;
             case 'success': return <CheckCircle className="w-5 h-5 text-green-500" />;
             case 'warning': return <AlertCircle className="w-5 h-5 text-orange-500" />;
             case 'info':
