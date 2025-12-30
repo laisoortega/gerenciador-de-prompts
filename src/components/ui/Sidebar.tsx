@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useStore } from '../../contexts/StoreContext';
 import { useAuth } from '../../contexts/AuthContext';
+import { usePlanLimits } from '../../hooks/usePlanLimits';
 import { Plus, Settings, LogOut, LayoutGrid, LayoutList, Kanban, FolderTree, Share2, Inbox, Braces } from 'lucide-react';
 import { fetchSharedWithMe } from '../../services/api';
 import { SimpleCategoryList } from '../sidebar/SimpleCategoryList';
@@ -12,6 +13,7 @@ import { BlazeLogoText } from './BlazeLogo';
 export const Sidebar: React.FC = () => {
     const { categoryTree, currentView, setCurrentView, user, setCreateCategoryModalOpen, selectedCategoryId, setSelectedCategoryId } = useStore();
     const { signOut } = useAuth();
+    const { usage, limits, usagePercentage } = usePlanLimits();
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -128,6 +130,11 @@ export const Sidebar: React.FC = () => {
                     className={`w-full justify-start gap-3 mb-2 ${selectedCategoryId === null ? 'bg-primary-500/10 text-primary-500 hover:bg-primary-500/20 shadow-none' : 'text-text-secondary'}`}
                 >
                     <Inbox className="w-4 h-4" /> Todos
+                    {limits.maxPrompts !== -1 && (
+                        <span className="ml-auto text-[10px] text-text-muted">
+                            {usage.promptCount}/{limits.maxPrompts}
+                        </span>
+                    )}
                 </Button>
 
                 <SimpleCategoryList categories={categoryTree} />

@@ -2,10 +2,12 @@ import React, { useState } from 'react';
 import { useStore } from '../contexts/StoreContext';
 import { Prompt } from '../types';
 import { usePromptFilters } from '../hooks/usePromptFilters';
+import { usePlanLimits } from '../hooks/usePlanLimits';
 import { FilterBar } from '../components/FilterBar';
 import { CreatePromptModal } from '../components/CreatePromptModal';
 import { SharePromptModal } from '../components/SharePromptModal';
 import { UsePromptModal } from '../components/UsePromptModal';
+import { UpgradePlanModal } from '../components/UpgradePlanModal';
 import { CardsView } from '../components/views/CardsView';
 import { TableView } from '../components/views/TableView';
 import { KanbanView } from '../components/views/KanbanView';
@@ -20,9 +22,12 @@ export const Dashboard: React.FC = () => {
         openCreatePromptWithCategory, preSelectedCategoryForModal
     } = useStore();
 
+    const { canCreatePrompt, usage, limits, usagePercentage } = usePlanLimits();
+
     const [sharingPrompt, setSharingPrompt] = useState<Prompt | null>(null);
     const [editingPrompt, setEditingPrompt] = useState<Prompt | undefined>(undefined);
     const [usingPrompt, setUsingPrompt] = useState<Prompt | null>(null);
+    const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
     // Local filter state for advanced filters
     const [selectedTags, setSelectedTags] = useState<string[]>([]);
@@ -98,6 +103,20 @@ export const Dashboard: React.FC = () => {
         setEditingPrompt(undefined);
     };
 
+    // Verifica limite antes de criar prompt
+    const handleCreatePrompt = (categoryId?: string) => {
+        if (!canCreatePrompt) {
+            setShowUpgradeModal(true);
+            return;
+        }
+        setEditingPrompt(undefined);
+        if (categoryId) {
+            openCreatePromptWithCategory(categoryId);
+        } else {
+            setCreatePromptModalOpen(true);
+        }
+    };
+
     return (
         <div className="animate-fadeIn pb-24 md:pb-8"> {/* Added padding bottom for mobile fab space */}
 
@@ -122,7 +141,7 @@ export const Dashboard: React.FC = () => {
                     <h3 className="text-xl font-bold text-text-primary">Nenhum prompt encontrado</h3>
                     <p className="text-text-secondary mt-2 mb-6">Crie seu primeiro prompt para começar a usar o sistema.</p>
                     <button
-                        onClick={() => { setEditingPrompt(undefined); setCreatePromptModalOpen(true); }}
+                        onClick={() => handleCreatePrompt()}
                         className="btn-primary"
                     >
                         Criar Primeiro Prompt
@@ -155,10 +174,7 @@ export const Dashboard: React.FC = () => {
                             onMovePrompt={movePrompt}
                             onEdit={handleEditPrompt}
                             onDelete={handleDeletePrompt}
-                            onCreatePrompt={(categoryId) => {
-                                setEditingPrompt(undefined);
-                                openCreatePromptWithCategory(categoryId);
-                            }}
+                            onCreatePrompt={(categoryId) => handleCreatePrompt(categoryId)}
                         />
                     )}
                     {currentView === 'folders' && (
@@ -190,6 +206,16 @@ export const Dashboard: React.FC = () => {
             {/* Modal de uso do prompt */}
             {usingPrompt && (
                 <UsePromptModal prompt={usingPrompt} onClose={() => setUsingPrompt(null)} />
+            )}
+
+            {/* Modal de upgrade quando limite atingido */}
+            {showUpgradeModal && (
+                <UpgradePlanModal
+                    onClose={() => setShowUpgradeModal(false)}
+                    limitType="prompts"
+                    currentUsage={usage.promptCount}
+                    currentLimit={limits.maxPrompts}
+                />
             )}
         </div>
     );
