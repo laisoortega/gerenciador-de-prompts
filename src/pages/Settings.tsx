@@ -2,16 +2,20 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStore } from '../contexts/StoreContext';
 import { useTheme } from '../contexts/ThemeContext';
-import { User, Mail, Moon, Sun, Shield, LogOut, Variable, ChevronRight } from 'lucide-react';
+import { User, Mail, Moon, Sun, Shield, LogOut, Variable, ChevronRight, Upload, Download } from 'lucide-react';
+import { ImportPromptsModal } from '../components/ImportPromptsModal';
+import { ExportPromptsModal } from '../components/ExportPromptsModal';
 
 export const Settings: React.FC = () => {
     const navigate = useNavigate();
-    const { user, logout, exportData, importData } = useStore();
+    const { user, logout } = useStore();
     const { theme, setTheme } = useTheme();
 
-    // Mock States for editable fields
+    // Local state
     const [name, setName] = useState(user?.name || '');
     const [email] = useState(user?.email || '');
+    const [showImportModal, setShowImportModal] = useState(false);
+    const [showExportModal, setShowExportModal] = useState(false);
 
     return (
         <div className="max-w-4xl mx-auto space-y-8 animate-fadeIn">
@@ -112,7 +116,6 @@ export const Settings: React.FC = () => {
                 </div>
             </div>
 
-            {/* Data Management Section */}
             <div className="bg-bg-surface border border-border-subtle rounded-xl p-6">
                 <h3 className="text-lg font-semibold text-text-primary mb-6 flex items-center gap-2">
                     <Shield className="w-5 h-5 text-primary-500" />
@@ -123,12 +126,13 @@ export const Settings: React.FC = () => {
                     <div className="flex items-center justify-between p-4 bg-bg-elevated rounded-lg border border-border-default">
                         <div>
                             <p className="font-medium text-text-primary">Exportar Dados</p>
-                            <p className="text-sm text-text-secondary">Baixe uma cópia de todos os seus prompts e categorias (JSON).</p>
+                            <p className="text-sm text-text-secondary">Baixe uma cópia de todos os seus prompts (JSON, CSV ou Markdown).</p>
                         </div>
                         <button
-                            onClick={exportData}
+                            onClick={() => setShowExportModal(true)}
                             className="btn-secondary flex items-center gap-2"
                         >
+                            <Download className="w-4 h-4" />
                             Exportar
                         </button>
                     </div>
@@ -136,27 +140,15 @@ export const Settings: React.FC = () => {
                     <div className="flex items-center justify-between p-4 bg-bg-elevated rounded-lg border border-border-default">
                         <div>
                             <p className="font-medium text-text-primary">Importar Dados</p>
-                            <p className="text-sm text-text-secondary">Restaure seus dados a partir de um arquivo JSON.</p>
+                            <p className="text-sm text-text-secondary">Importe prompts a partir de JSON, CSV ou texto.</p>
                         </div>
-                        <label className="btn-secondary flex items-center gap-2 cursor-pointer">
+                        <button
+                            onClick={() => setShowImportModal(true)}
+                            className="btn-secondary flex items-center gap-2"
+                        >
+                            <Upload className="w-4 h-4" />
                             Importar
-                            <input
-                                type="file"
-                                accept=".json"
-                                className="hidden"
-                                onChange={(e) => {
-                                    const file = e.target.files?.[0];
-                                    if (file) {
-                                        const reader = new FileReader();
-                                        reader.onload = (ev) => {
-                                            const content = ev.target?.result as string;
-                                            importData(content);
-                                        };
-                                        reader.readAsText(file);
-                                    }
-                                }}
-                            />
-                        </label>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -181,6 +173,10 @@ export const Settings: React.FC = () => {
                     </button>
                 </div>
             </div>
+
+            {/* Modals */}
+            {showImportModal && <ImportPromptsModal onClose={() => setShowImportModal(false)} />}
+            {showExportModal && <ExportPromptsModal onClose={() => setShowExportModal(false)} />}
         </div>
     );
 };
