@@ -1,125 +1,177 @@
 import React from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { useStore } from '../../contexts/StoreContext';
-import { useAuth } from '../../contexts/AuthContext';
-import { usePlanLimits } from '../../hooks/usePlanLimits';
-import { Plus, Settings, LogOut, Inbox, Crown } from 'lucide-react';
-import { SimpleCategoryList } from '../sidebar/SimpleCategoryList';
-import { Button } from './Button';
-import { BlazeLogoText } from './BlazeLogo';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { FileText, Users, Tag, Variable, Settings, LogOut, ChevronLeft, ChevronRight, Moon, Sun, Plus, Crown } from 'lucide-react';
 import clsx from 'clsx';
+import { useStore } from '../../contexts/StoreContext';
+import { useTheme } from '../../contexts/ThemeContext';
+import { useAuth } from '../../contexts/AuthContext';
+import { BlazeLogoText, BlazeLogoIcon } from './AppLogo';
 
-export const Sidebar: React.FC = () => {
-    const { categoryTree, user, setCreateCategoryModalOpen, selectedCategoryId, setSelectedCategoryId } = useStore();
-    const { signOut } = useAuth();
-    const { usage, limits, usagePercentage } = usePlanLimits();
-    const navigate = useNavigate();
+interface SidebarProps {
+    isCollapsed: boolean;
+    onToggle: () => void;
+}
+
+export function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
     const location = useLocation();
+    const navigate = useNavigate();
+    const { theme, setTheme } = useTheme();
+    const { signOut } = useAuth();
+    const { setCreatePromptModalOpen, user } = useStore();
+
+    const navItems = [
+        { id: 'prompts', label: 'Meus Prompts', icon: FileText, path: '/' },
+        { id: 'shared', label: 'Compartilhados', icon: Users, path: '/shared-with-me' },
+        { id: 'tags', label: 'Tags', icon: Tag, path: '/tags' },
+        { id: 'variables', label: 'Variáveis', icon: Variable, path: '/settings/variables' },
+    ];
+
+    const currentPath = location.pathname;
+    const bgColor = theme === 'dark' ? '#1d1d1d' : '#f6f6f6';
+    const textColor = theme === 'dark' ? 'text-white' : 'text-gray-900';
+    const mutedColor = theme === 'dark' ? 'text-white/60' : 'text-gray-500';
+    const hoverBg = theme === 'dark' ? 'hover:bg-white/10' : 'hover:bg-black/5';
+    const activeBg = theme === 'dark' ? 'bg-white/10' : 'bg-black/10';
+    const borderColor = theme === 'dark' ? 'border-white/10' : 'border-black/10';
 
     return (
-        <aside className="w-64 sidebar-gradient border-r border-border-subtle h-screen flex flex-col">
-            {/* Logo - minimalista */}
-            <div
-                className="h-14 flex items-center px-5 border-b border-border-subtle cursor-pointer"
-                onClick={() => navigate('/')}
-            >
-                <BlazeLogoText />
-            </div>
+        <aside
+            className={clsx(
+                "fixed left-0 top-0 h-screen flex flex-col transition-all duration-300 z-40",
+                isCollapsed ? "w-16" : "w-56"
+            )}
+            style={{ backgroundColor: bgColor }}
+        >
+            {/* Header */}
+            <div className={clsx(
+                "h-14 flex items-center border-b",
+                borderColor,
+                isCollapsed ? 'justify-center px-2' : 'justify-between px-4'
+            )}>
+                {!isCollapsed ? (
+                    <Link to="/" className="flex items-center">
+                        <BlazeLogoText />
+                    </Link>
+                ) : (
+                    <Link to="/" className="flex items-center">
+                        <BlazeLogoIcon />
+                    </Link>
+                )}
 
-            {/* Categories - área principal */}
-            <div className="flex-1 overflow-y-auto p-4">
-                <div className="flex items-center justify-between mb-3">
-                    <h3 className="text-xs font-semibold text-text-muted uppercase tracking-wider">
-                        Categorias
-                    </h3>
-                    <button
-                        onClick={() => setCreateCategoryModalOpen(true)}
-                        className="w-6 h-6 rounded-lg flex items-center justify-center text-text-muted hover:text-primary-500 hover:bg-primary-500/10 transition-all"
-                    >
-                        <Plus className="w-4 h-4" />
+                {!isCollapsed && (
+                    <button onClick={onToggle} className={clsx("p-1.5 rounded-lg", mutedColor, hoverBg)}>
+                        <ChevronLeft className="w-4 h-4" />
                     </button>
-                </div>
-
-                {/* Todos */}
-                <button
-                    onClick={() => {
-                        setSelectedCategoryId(null);
-                        navigate('/prompts');
-                    }}
-                    className={clsx(
-                        "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all mb-2",
-                        selectedCategoryId === null
-                            ? "bg-primary-500/10 text-primary-500"
-                            : "text-text-secondary hover:text-text-primary hover:bg-bg-hover"
-                    )}
-                >
-                    <Inbox className="w-4 h-4" />
-                    Todos os Prompts
-                    <span className="ml-auto text-xs text-text-muted">
-                        {usage.promptCount}
-                    </span>
-                </button>
-
-                {/* Lista de Categorias */}
-                <SimpleCategoryList categories={categoryTree} />
+                )}
             </div>
 
-            {/* Upgrade Banner - se plano free */}
-            {user?.plan_id === 'free' && (
-                <div className="mx-4 mb-4 p-4 rounded-2xl bg-gradient-to-br from-primary-500/10 to-accent-500/10 border border-primary-500/20">
-                    <div className="flex items-center gap-2 mb-2">
-                        <Crown className="w-4 h-4 text-accent-500" />
-                        <span className="text-sm font-semibold text-text-primary">Upgrade</span>
-                    </div>
-                    <p className="text-xs text-text-muted mb-3">
-                        Desbloqueie prompts ilimitados e recursos premium
-                    </p>
-                    <Button
-                        variant="primary"
-                        size="sm"
-                        className="w-full btn-cinematic"
-                        onClick={() => navigate('/subscription')}
-                    >
-                        Ver Planos
-                    </Button>
-                </div>
+            {/* Expand button when collapsed */}
+            {isCollapsed && (
+                <button onClick={onToggle} className={clsx("mx-auto mt-2 p-1.5 rounded-lg", mutedColor, hoverBg)}>
+                    <ChevronRight className="w-4 h-4" />
+                </button>
             )}
 
-            {/* User Footer - simplificado */}
-            <div className="p-4 border-t border-border-subtle">
-                <div className="flex items-center gap-3">
-                    {/* Avatar */}
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center text-white font-bold shadow-lg shadow-primary-500/20">
-                        {user?.name?.charAt(0)?.toUpperCase()}
-                    </div>
+            {/* New Prompt Button */}
+            <div className={clsx("p-3", isCollapsed && "px-2")}>
+                <button
+                    onClick={() => setCreatePromptModalOpen(true)}
+                    className={clsx(
+                        "w-full flex items-center justify-center gap-2 py-2.5 rounded-lg font-medium",
+                        "bg-primary-500 text-white hover:bg-primary-600",
+                        isCollapsed ? "px-2" : "px-4"
+                    )}
+                >
+                    <Plus className="w-4 h-4" />
+                    {!isCollapsed && <span>Novo Prompt</span>}
+                </button>
+            </div>
 
-                    {/* Info */}
-                    <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-text-primary truncate">
-                            {user?.name}
-                        </p>
-                        <p className="text-xs text-text-muted truncate">
-                            {user?.email}
-                        </p>
-                    </div>
+            {/* Navigation */}
+            <nav className="flex-1 p-3 space-y-1">
+                {navItems.map(item => {
+                    const isActive = item.path === '/'
+                        ? currentPath === '/'
+                        : currentPath.startsWith(item.path);
+                    return (
+                        <button
+                            key={item.id}
+                            onClick={() => navigate(item.path)}
+                            className={clsx(
+                                "w-full flex items-center gap-3 py-2.5 rounded-lg transition-all",
+                                isCollapsed ? "justify-center px-2" : "px-3",
+                                isActive ? clsx(activeBg, textColor) : clsx(mutedColor, hoverBg)
+                            )}
+                            title={isCollapsed ? item.label : undefined}
+                        >
+                            <item.icon className="w-5 h-5 flex-shrink-0" />
+                            {!isCollapsed && <span className="text-sm font-medium">{item.label}</span>}
+                        </button>
+                    );
+                })}
+            </nav>
 
-                    {/* Actions */}
-                    <div className="flex gap-1">
-                        <button
-                            onClick={() => navigate('/settings')}
-                            className="w-8 h-8 rounded-lg flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-bg-hover transition-all"
-                        >
-                            <Settings className="w-4 h-4" />
-                        </button>
-                        <button
-                            onClick={signOut}
-                            className="w-8 h-8 rounded-lg flex items-center justify-center text-text-muted hover:text-error-500 hover:bg-error-500/10 transition-all"
-                        >
-                            <LogOut className="w-4 h-4" />
-                        </button>
-                    </div>
-                </div>
+            {/* Footer */}
+            <div className={clsx("p-3 space-y-1 border-t", borderColor)}>
+                {/* Plan Badge */}
+                <button
+                    onClick={() => navigate('/subscription')}
+                    className={clsx(
+                        "w-full flex items-center gap-3 py-2.5 rounded-lg",
+                        isCollapsed ? "justify-center px-2" : "px-3",
+                        "bg-gradient-to-r from-primary-500 to-orange-500 text-white hover:opacity-90 transition-opacity"
+                    )}
+                    title={isCollapsed ? 'Plano Free - Upgrade' : undefined}
+                >
+                    <Crown className="w-5 h-5" />
+                    {!isCollapsed && (
+                        <div className="flex-1 flex items-center justify-between">
+                            <span className="text-sm font-medium">Plano Free</span>
+                            <span className="text-xs opacity-80">Upgrade</span>
+                        </div>
+                    )}
+                </button>
+
+                {/* Theme Toggle */}
+                <button
+                    onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                    className={clsx("w-full flex items-center gap-3 py-2.5 rounded-lg", isCollapsed ? "justify-center px-2" : "px-3", mutedColor, hoverBg)}
+                    title={isCollapsed ? (theme === 'dark' ? 'Modo Claro' : 'Modo Escuro') : undefined}
+                >
+                    {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+                    {!isCollapsed && <span className="text-sm font-medium">{theme === 'dark' ? 'Modo Claro' : 'Modo Escuro'}</span>}
+                </button>
+
+                {/* Settings */}
+                <button
+                    onClick={() => navigate('/settings')}
+                    className={clsx(
+                        "w-full flex items-center gap-3 py-2.5 rounded-lg",
+                        isCollapsed ? "justify-center px-2" : "px-3",
+                        currentPath === '/settings' || currentPath.startsWith('/settings')
+                            ? clsx(activeBg, textColor)
+                            : clsx(mutedColor, hoverBg)
+                    )}
+                    title={isCollapsed ? 'Configurações' : undefined}
+                >
+                    <Settings className="w-5 h-5" />
+                    {!isCollapsed && <span className="text-sm font-medium">Configurações</span>}
+                </button>
+
+                {/* Logout */}
+                <button
+                    onClick={() => signOut()}
+                    className={clsx(
+                        "w-full flex items-center gap-3 py-2.5 rounded-lg",
+                        isCollapsed ? "justify-center px-2" : "px-3",
+                        "text-error-400 hover:bg-error-500/10"
+                    )}
+                    title={isCollapsed ? 'Sair' : undefined}
+                >
+                    <LogOut className="w-5 h-5" />
+                    {!isCollapsed && <span className="text-sm font-medium">Sair</span>}
+                </button>
             </div>
         </aside>
     );
-};
+}

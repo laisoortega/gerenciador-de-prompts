@@ -1,55 +1,93 @@
-import { InputHTMLAttributes, forwardRef } from 'react';
-import { clsx, type ClassValue } from 'clsx';
-import { twMerge } from 'tailwind-merge';
+import React from 'react';
 
-function cn(...inputs: ClassValue[]) {
-    return twMerge(clsx(inputs));
-}
-
-interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
+interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
     label?: string;
     error?: string;
     icon?: React.ReactNode;
 }
 
-export const Input = forwardRef<HTMLInputElement, InputProps>(({
-    className,
-    type,
+export const Input: React.FC<InputProps> = ({
     label,
     error,
     icon,
+    className = '',
     ...props
-}, ref) => {
+}) => {
     return (
         <div className="w-full">
             {label && (
-                <label className="block text-sm font-medium text-text-secondary mb-1.5 ml-1">
+                <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1.5">
                     {label}
                 </label>
             )}
             <div className="relative">
                 {icon && (
-                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted">
+                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]">
                         {icon}
                     </div>
                 )}
                 <input
-                    type={type}
-                    className={cn(
-                        "flex h-10 w-full rounded-xl border border-border-default bg-bg-surface px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-text-disabled focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 disabled:cursor-not-allowed disabled:opacity-50 transition-all text-text-primary",
-                        icon && "pl-10",
-                        error && "border-error-500 focus-visible:ring-error-500",
-                        className
-                    )}
-                    ref={ref}
+                    className={`
+            w-full px-4 py-2.5 
+            bg-[var(--color-bg-surface)] 
+            border border-[var(--color-border)]
+            rounded-lg
+            text-[var(--color-text-primary)]
+            placeholder:text-[var(--color-text-muted)]
+            focus:outline-none focus:border-[var(--color-accent)]
+            transition-colors
+            ${icon ? 'pl-10' : ''}
+            ${error ? 'border-[var(--color-error)]' : ''}
+            ${className}
+          `}
                     {...props}
                 />
             </div>
             {error && (
-                <p className="text-xs text-error-500 mt-1 ml-1">{error}</p>
+                <p className="mt-1.5 text-sm text-[var(--color-error)]">{error}</p>
             )}
         </div>
     );
-});
+};
 
-Input.displayName = "Input";
+// Textarea variant
+interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
+    label?: string;
+    error?: string;
+}
+
+export const Textarea: React.FC<TextareaProps> = ({
+    label,
+    error,
+    className = '',
+    ...props
+}) => {
+    return (
+        <div className="w-full">
+            {label && (
+                <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1.5">
+                    {label}
+                </label>
+            )}
+            <textarea
+                className={`
+          w-full px-4 py-3 
+          bg-[var(--color-bg-surface)] 
+          border border-[var(--color-border)]
+          rounded-lg
+          text-[var(--color-text-primary)]
+          placeholder:text-[var(--color-text-muted)]
+          focus:outline-none focus:border-[var(--color-accent)]
+          transition-colors
+          resize-none
+          ${error ? 'border-[var(--color-error)]' : ''}
+          ${className}
+        `}
+                {...props}
+            />
+            {error && (
+                <p className="mt-1.5 text-sm text-[var(--color-error)]">{error}</p>
+            )}
+        </div>
+    );
+};

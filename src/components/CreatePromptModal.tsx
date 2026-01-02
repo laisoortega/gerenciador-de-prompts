@@ -1,38 +1,49 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { Prompt } from '../types';
 import { useStore } from '../contexts/StoreContext';
 import { Modal } from './ui/Modal';
 import { Button } from './ui/Button';
 import { Input } from './ui/Input';
-import { VariableLibrary } from './VariableLibrary';
-import { ChevronLeft, ChevronRight, Braces } from 'lucide-react';
+import { useCustomVariablesQuery } from '../hooks/useCustomVariablesQuery';
+import { ChevronDown, Plus, X, Braces, Search } from 'lucide-react';
+import { Menu, Transition } from '@headlessui/react';
+import { HighlightedPromptEditor } from './ui/HighlightedPromptEditor';
 
 export function CreatePromptModal({ onClose, initialData }: { onClose: () => void; initialData?: Prompt }) {
-    const { addPrompt, updatePrompt, activeWorkspaceId, categories, selectedCategoryId, preSelectedCategoryForModal } = useStore();
+    const { addPrompt, updatePrompt, activeWorkspaceId, prompts, categories } = useStore();
+    const { variables: libraryVariables, isLoading: loadingVariables } = useCustomVariablesQuery();
+
     const [title, setTitle] = useState(initialData?.title || '');
     const [content, setContent] = useState(initialData?.content || '');
-    const [tagsInput, setTagsInput] = useState(initialData?.tags?.join(', ') || '');
-    const [recommendedAi, setRecommendedAi] = useState(initialData?.recommended_ai || 'gpt-4');
-    const [categoryId, setCategoryId] = useState<string | null>(initialData?.category_id || preSelectedCategoryForModal || selectedCategoryId || null);
+    const [tags, setTags] = useState<string[]>(initialData?.tags || []);
+    const [tagInput, setTagInput] = useState('');
     const [detectedVariables, setDetectedVariables] = useState<{ name: string, default?: string }[]>([]);
-    const [showLibrary, setShowLibrary] = useState(false);
-    const [mobileTab, setMobileTab] = useState<'form' | 'variables'>('form');
+    const [variableSearch, setVariableSearch] = useState('');
     const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+    // Derive unique tags from existing prompts
+    const existingTags = useMemo(() => {
+        const allTags: string[] = [];
+        prompts.forEach(p => {
+            if (Array.isArray(p.tags)) {
+                allTags.push(...p.tags);
+            }
+        });
+        return [...new Set(allTags)].sort();
+    }, [prompts]);
 
     useEffect(() => {
         if (initialData) {
             setTitle(initialData.title);
             setContent(initialData.content);
-            setTagsInput(initialData.tags?.join(', ') || '');
-            setRecommendedAi(initialData.recommended_ai || 'gpt-4');
+            setTags(initialData.tags || []);
             if (initialData.variables) {
                 setDetectedVariables(initialData.variables.map(v => ({ name: v.name, default: v.default || v.value })));
             }
         } else {
             setTitle('');
             setContent('');
-            setTagsInput('');
-            setRecommendedAi('gpt-4');
+            setTags([]);
             setDetectedVariables([]);
         }
     }, [initialData]);
@@ -69,16 +80,25 @@ export function CreatePromptModal({ onClose, initialData }: { onClose: () => voi
             textarea.setSelectionRange(newCursorPos, newCursorPos);
         }, 0);
 
-        setMobileTab('form');
+        setVariableSearch('');
+    };
+
+    const handleAddTag = (tag: string) => {
+        const trimmed = tag.trim().toLowerCase();
+        if (trimmed && !tags.includes(trimmed)) {
+            setTags([...tags, trimmed]);
+        }
+        setTagInput('');
+    };
+
+    const handleRemoveTag = (tag: string) => {
+        setTags(tags.filter(t => t !== tag));
     };
 
     const handleSave = () => {
-        const tags = tagsInput.split(',').map(t => t.trim()).filter(Boolean);
-
         const finalVariables = detectedVariables.map(v => ({
             name: v.name,
-            default: v.default,
-            category: 'custom'
+            default: v.default || '',
         }));
 
         const promptData = {
@@ -86,8 +106,7 @@ export function CreatePromptModal({ onClose, initialData }: { onClose: () => voi
             content,
             variables: finalVariables,
             tags,
-            recommended_ai: recommendedAi,
-            category_id: categoryId,
+            recommended_ai: 'gpt-4' as const,
             workspace_id: activeWorkspaceId,
             is_favorite: initialData?.is_favorite || false
         };
@@ -100,183 +119,239 @@ export function CreatePromptModal({ onClose, initialData }: { onClose: () => voi
         onClose();
     };
 
-    // Render form content inline (not as a component to avoid focus loss)
-    const formContent = (
-        <div className="space-y-4 md:space-y-5">
-            <Input
-                label="Título"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="Ex: Email de Vendas Frio"
-            />
+    // Filter library variables by search
+    const filteredLibraryVariables = useMemo(() => {
+        if (!variableSearch) return libraryVariables;
+        const q = variableSearch.toLowerCase();
+        return libraryVariables.filter(v =>
+            v.name.toLowerCase().includes(q) ||
+            v.label.toLowerCase().includes(q) ||
+            (v.description || '').toLowerCase().includes(q)
+        );
+    }, [libraryVariables, variableSearch]);
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
-                <div>
-                    <label className="block text-sm font-medium text-text-secondary mb-1.5 ml-1">Categoria</label>
-                    <select
-                        value={categoryId || ''}
-                        onChange={(e) => setCategoryId(e.target.value || null)}
-                        className="flex h-10 md:h-10 w-full rounded-xl border border-border-default bg-bg-surface px-3 py-2 text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 transition-all"
-                    >
-                        <option value="">Sem Categoria</option>
-                        {categories.map(cat => (
-                            <option key={cat.id} value={cat.id}>{cat.name}</option>
-                        ))}
-                    </select>
-                </div>
-                <div>
-                    <label className="block text-sm font-medium text-text-secondary mb-1.5 ml-1">IA Recomendada</label>
-                    <select
-                        value={recommendedAi}
-                        onChange={(e) => setRecommendedAi(e.target.value)}
-                        className="flex h-10 md:h-10 w-full rounded-xl border border-border-default bg-bg-surface px-3 py-2 text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 transition-all"
-                    >
-                        <option value="gpt-4">GPT-4</option>
-                        <option value="gpt-3.5">GPT-3.5</option>
-                        <option value="claude-3-opus">Claude 3 Opus</option>
-                        <option value="claude-3-sonnet">Claude 3 Sonnet</option>
-                        <option value="gemini-pro">Gemini Pro</option>
-                        <option value="midjourney">Midjourney</option>
-                    </select>
-                </div>
-            </div>
-            <Input
-                label="Tags"
-                value={tagsInput}
-                onChange={(e) => setTagsInput(e.target.value)}
-                placeholder="vendas, email, marketing"
-            />
-
-            <div>
-                <label className="block text-sm font-medium text-text-secondary mb-1.5 ml-1">
-                    Conteúdo do Prompt
-                </label>
-                <div className="relative">
-                    <textarea
-                        ref={textareaRef}
-                        value={content}
-                        onChange={(e) => setContent(e.target.value)}
-                        className="flex min-h-[140px] md:min-h-[180px] w-full rounded-xl border border-border-default bg-bg-surface px-3 py-2 text-sm font-mono leading-relaxed placeholder:text-text-disabled focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 transition-all text-text-primary resize-y"
-                        placeholder="Escreva seu prompt aqui... Use {{variavel}} para inserir variáveis."
-                        spellCheck={false}
-                    />
-                </div>
-            </div>
-
-            {/* Detected Variables Section */}
-            {detectedVariables.length > 0 && (
-                <div className="bg-gradient-to-br from-bg-elevated to-bg-surface rounded-xl p-3 md:p-4 border border-border-default shadow-sm">
-                    <h4 className="text-sm font-semibold text-text-primary mb-3 flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-primary-500 animate-pulse"></span>
-                        {detectedVariables.length} Variáveis Detectadas
-                    </h4>
-                    <div className="grid grid-cols-1 gap-2">
-                        {detectedVariables.map((variable, idx) => (
-                            <div key={variable.name} className="flex items-center gap-2 md:gap-3 bg-bg-surface p-2 md:p-2.5 rounded-lg border border-border-subtle hover:border-primary-500/30 transition-colors">
-                                <code className="text-xs font-mono text-primary-500 bg-primary-500/10 px-1.5 py-0.5 rounded-md border border-primary-500/20 whitespace-nowrap flex-shrink-0">
-                                    {`{{${variable.name}}}`}
-                                </code>
-                                <input
-                                    type="text"
-                                    placeholder="Valor padrão"
-                                    className="flex-1 bg-transparent text-sm border-none focus:ring-0 p-0 text-text-primary placeholder-text-muted min-w-0"
-                                    value={variable.default || ''}
-                                    onChange={(e) => {
-                                        const val = e.target.value;
-                                        setDetectedVariables(prev => prev.map(p => p.name === variable.name ? { ...p, default: val } : p));
-                                    }}
-                                />
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            )}
-        </div>
-    );
+    // Suggestions for tags
+    const tagSuggestions = useMemo(() => {
+        if (!tagInput) return [];
+        const q = tagInput.toLowerCase();
+        return existingTags
+            .filter(t => t.toLowerCase().includes(q) && !tags.includes(t))
+            .slice(0, 5);
+    }, [tagInput, existingTags, tags]);
 
     return (
-        <Modal size="xl" onClose={onClose}>
+        <Modal size="lg" onClose={onClose}>
             <Modal.Header>
-                <div className="flex items-center justify-between w-full pr-8">
-                    <h2 className="text-lg md:text-xl font-bold text-text-primary">
-                        {initialData ? 'Editar Prompt' : 'Criar Novo Prompt'}
-                    </h2>
-                    {/* Desktop toggle */}
-                    <button
-                        onClick={() => setShowLibrary(!showLibrary)}
-                        className="hidden md:flex items-center gap-1 text-xs text-text-muted hover:text-primary-500 transition-colors"
-                    >
-                        {showLibrary ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
-                        {showLibrary ? 'Ocultar' : 'Mostrar'} Variáveis
-                    </button>
-                </div>
+                <h2 className="text-lg font-bold text-text-primary">
+                    {initialData ? 'Editar Prompt' : 'Novo Prompt'}
+                </h2>
+                <button
+                    onClick={onClose}
+                    className="p-1.5 rounded-lg text-text-muted hover:text-text-primary hover:bg-bg-hover transition-colors"
+                >
+                    <X className="w-5 h-5" />
+                </button>
             </Modal.Header>
 
-            <Modal.Body className="p-0">
-                {/* Mobile Tabs */}
-                <div className="md:hidden flex border-b border-border-subtle bg-bg-elevated/50">
-                    <button
-                        onClick={() => setMobileTab('form')}
-                        className={`flex-1 py-3 text-sm font-medium transition-colors ${mobileTab === 'form'
-                            ? 'text-primary-500 border-b-2 border-primary-500'
-                            : 'text-text-secondary'
-                            }`}
-                    >
-                        Formulário
-                    </button>
-                    <button
-                        onClick={() => setMobileTab('variables')}
-                        className={`flex-1 py-3 text-sm font-medium transition-colors flex items-center justify-center gap-1.5 ${mobileTab === 'variables'
-                            ? 'text-primary-500 border-b-2 border-primary-500'
-                            : 'text-text-secondary'
-                            }`}
-                    >
-                        <Braces className="w-4 h-4" />
-                        Variáveis
-                    </button>
-                </div>
+            <Modal.Body className="space-y-5">
+                {/* Título */}
+                <Input
+                    label="Título"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    placeholder="Ex: Email de Vendas"
+                />
 
-                {/* Mobile Content */}
-                <div className="md:hidden">
-                    {mobileTab === 'form' ? (
-                        <div className="p-4 overflow-y-auto scroll-mobile">
-                            {formContent}
-                        </div>
-                    ) : (
-                        <div className="h-[50vh] overflow-y-auto scroll-mobile">
-                            <VariableLibrary onInsertVariable={handleInsertVariable} />
-                        </div>
-                    )}
-                </div>
-
-                {/* Desktop Layout */}
-                <div className="hidden md:flex h-[60vh]">
-                    {/* Main Form */}
-                    <div className={`flex-1 p-6 overflow-y-auto ${showLibrary ? 'border-r border-border-subtle' : ''}`}>
-                        {formContent}
+                {/* Tags */}
+                <div>
+                    <label className="block text-sm font-medium text-text-secondary mb-1.5">
+                        Tags
+                    </label>
+                    <div className="flex flex-wrap gap-2 mb-2">
+                        {tags.map(tag => (
+                            <span
+                                key={tag}
+                                className="inline-flex items-center gap-1 px-2.5 py-1 bg-primary-500/15 text-primary-400 rounded-full text-xs font-medium"
+                            >
+                                #{tag}
+                                <button
+                                    onClick={() => handleRemoveTag(tag)}
+                                    className="hover:text-primary-300 transition-colors"
+                                >
+                                    <X className="w-3 h-3" />
+                                </button>
+                            </span>
+                        ))}
                     </div>
-
-                    {/* Variable Library Sidebar */}
-                    {showLibrary && (
-                        <div className="w-72 bg-bg-elevated/50 border-l border-border-subtle flex-shrink-0">
-                            <VariableLibrary onInsertVariable={handleInsertVariable} />
-                        </div>
-                    )}
+                    <div className="relative">
+                        <input
+                            type="text"
+                            value={tagInput}
+                            onChange={(e) => setTagInput(e.target.value)}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter' && tagInput.trim()) {
+                                    e.preventDefault();
+                                    handleAddTag(tagInput);
+                                }
+                            }}
+                            className="w-full h-10 px-3 rounded-xl border border-border-default bg-bg-surface text-sm text-text-primary focus:border-primary-500"
+                            placeholder="Digite uma tag e pressione Enter"
+                        />
+                        {tagSuggestions.length > 0 && (
+                            <div className="absolute top-full left-0 right-0 mt-1 bg-bg-elevated border border-border-subtle rounded-xl shadow-lg z-10 py-1">
+                                {tagSuggestions.map(tag => (
+                                    <button
+                                        key={tag}
+                                        onClick={() => handleAddTag(tag)}
+                                        className="w-full px-3 py-2 text-left text-sm text-text-secondary hover:bg-bg-hover hover:text-text-primary transition-colors"
+                                    >
+                                        #{tag}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+                    </div>
                 </div>
+
+                {/* Content */}
+                <div>
+                    <label className="block text-sm font-medium text-text-secondary mb-1.5">
+                        Conteúdo do Prompt
+                    </label>
+                    <HighlightedPromptEditor
+                        value={content}
+                        onChange={setContent}
+                        placeholder="Escreva seu prompt... Use {{variavel}} para variáveis."
+                        minHeight="180px"
+                    />
+
+                    {/* Botão de Inserir Variável - Dropdown */}
+                    <div className="flex items-center gap-3 mt-2">
+                        <Menu as="div" className="relative">
+                            <Menu.Button className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-text-secondary hover:text-primary-500 bg-bg-elevated hover:bg-bg-hover border border-border-subtle rounded-lg transition-colors">
+                                <Plus className="w-3.5 h-3.5" />
+                                Inserir Variável
+                                <ChevronDown className="w-3 h-3" />
+                            </Menu.Button>
+                            <Transition
+                                enter="transition ease-out duration-100"
+                                enterFrom="transform opacity-0 scale-95"
+                                enterTo="transform opacity-100 scale-100"
+                                leave="transition ease-in duration-75"
+                                leaveFrom="transform opacity-100 scale-100"
+                                leaveTo="transform opacity-0 scale-95"
+                            >
+                                <Menu.Items className="absolute left-0 bottom-full mb-1 w-72 origin-bottom-left rounded-xl bg-bg-elevated border border-border-subtle shadow-xl z-[100] overflow-hidden">
+                                    {/* Search */}
+                                    <div className="p-2 border-b border-border-subtle">
+                                        <div className="relative">
+                                            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-muted" />
+                                            <input
+                                                type="text"
+                                                placeholder="Buscar variável..."
+                                                value={variableSearch}
+                                                onChange={(e) => setVariableSearch(e.target.value)}
+                                                className="w-full pl-8 pr-3 py-1.5 text-xs rounded-lg border border-border-subtle bg-bg-surface text-text-primary placeholder-text-muted focus:outline-none focus:border-primary-500"
+                                                onClick={(e) => e.stopPropagation()}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Variables List */}
+                                    <div className="max-h-60 overflow-y-auto py-1">
+                                        {loadingVariables ? (
+                                            <div className="px-3 py-4 text-center text-xs text-text-muted">
+                                                Carregando...
+                                            </div>
+                                        ) : filteredLibraryVariables.length === 0 ? (
+                                            <div className="px-3 py-4 text-center">
+                                                <Braces className="w-6 h-6 text-text-muted mx-auto mb-1" />
+                                                <p className="text-xs text-text-muted">
+                                                    {variableSearch ? 'Nenhuma variável encontrada' : 'Nenhuma variável criada'}
+                                                </p>
+                                                <p className="text-[10px] text-text-muted mt-1">
+                                                    Crie variáveis em Configurações → Variáveis
+                                                </p>
+                                            </div>
+                                        ) : (
+                                            filteredLibraryVariables.map(variable => (
+                                                <Menu.Item key={variable.id}>
+                                                    {({ active }) => (
+                                                        <button
+                                                            onClick={() => handleInsertVariable(variable.name)}
+                                                            className={`w-full px-3 py-2 text-left transition-colors ${active ? 'bg-bg-hover' : ''
+                                                                }`}
+                                                        >
+                                                            <code className="text-xs font-mono text-primary-400 bg-primary-500/10 px-1.5 py-0.5 rounded">
+                                                                {`{{${variable.name}}}`}
+                                                            </code>
+                                                            {variable.description && (
+                                                                <p className="text-[11px] text-text-muted mt-0.5 line-clamp-1">
+                                                                    {variable.description}
+                                                                </p>
+                                                            )}
+                                                        </button>
+                                                    )}
+                                                </Menu.Item>
+                                            ))
+                                        )}
+                                    </div>
+
+                                    {/* Quick Add */}
+                                    <div className="p-2 border-t border-border-subtle bg-bg-surface/50">
+                                        <p className="text-[10px] text-text-muted">
+                                            Ou digite <code className="text-primary-400">{"{{nome}}"}</code> direto no texto
+                                        </p>
+                                    </div>
+                                </Menu.Items>
+                            </Transition>
+                        </Menu>
+
+                        <span className="text-xs text-text-muted">
+                            {content.length} caracteres
+                        </span>
+                    </div>
+                </div>
+
+                {/* Detected Variables - Valores padrão */}
+                {detectedVariables.length > 0 && (
+                    <div className="bg-bg-elevated rounded-xl p-4 border border-border-subtle">
+                        <h4 className="text-sm font-medium text-text-primary mb-3 flex items-center gap-2">
+                            <Braces className="w-4 h-4 text-primary-500" />
+                            {detectedVariables.length} Variáveis Detectadas
+                        </h4>
+                        <div className="grid gap-2">
+                            {detectedVariables.map(v => (
+                                <div key={v.name} className="flex items-center gap-3">
+                                    <code className="text-xs text-primary-500 bg-primary-500/10 px-2 py-1 rounded font-mono min-w-[100px]">
+                                        {`{{${v.name}}}`}
+                                    </code>
+                                    <input
+                                        type="text"
+                                        placeholder="Valor padrão (opcional)"
+                                        className="flex-1 h-8 px-3 text-sm bg-bg-surface border border-border-default rounded-lg text-text-primary focus:border-primary-500"
+                                        value={v.default || ''}
+                                        onChange={(e) => {
+                                            setDetectedVariables(prev =>
+                                                prev.map(p => p.name === v.name ? { ...p, default: e.target.value } : p)
+                                            );
+                                        }}
+                                    />
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
             </Modal.Body>
 
             <Modal.Footer>
-                <div className="flex justify-between items-center w-full">
-                    <span className="text-xs text-text-muted hidden sm:block">
-                        {detectedVariables.length > 0 && `${detectedVariables.length} variáveis · `}
-                        {content.length} caracteres
-                    </span>
-                    <div className="flex gap-2 md:gap-3 w-full sm:w-auto">
-                        <Button variant="ghost" onClick={onClose} className="flex-1 sm:flex-none">Cancelar</Button>
-                        <Button onClick={handleSave} disabled={!title || !content} className="flex-1 sm:flex-none">
-                            {initialData ? 'Salvar' : 'Criar Prompt'}
-                        </Button>
-                    </div>
+                <div className="flex justify-end gap-3 w-full">
+                    <Button variant="ghost" onClick={onClose}>
+                        Cancelar
+                    </Button>
+                    <Button onClick={handleSave} disabled={!title || !content}>
+                        {initialData ? 'Salvar' : 'Criar Prompt'}
+                    </Button>
                 </div>
             </Modal.Footer>
         </Modal>

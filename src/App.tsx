@@ -14,9 +14,10 @@ import SharedWithMePage from './pages/SharedWithMe';
 import { AdminDashboard } from './pages/admin/AdminDashboard';
 import { UserManagement } from './pages/admin/UserManagement';
 import { PlanManagement } from './pages/admin/PlanManagement';
-import { Settings } from './pages/Settings';
+import { SettingsPage } from './pages/SettingsPage';
 import { SettingsVariables } from './pages/SettingsVariables';
-import { Subscription } from './pages/Subscription';
+import { TagsPage } from './pages/TagsPage';
+import { SubscriptionPage } from './pages/SubscriptionPage';
 import { Notifications } from './pages/Notifications';
 import { AdminSettings } from './pages/admin/AdminSettings';
 
@@ -74,9 +75,10 @@ const AppRoutes: React.FC = () => {
                 <Route path="/" element={<HomePage />} />
                 <Route path="/prompts" element={<Dashboard />} />
                 <Route path="/shared-with-me" element={<SharedWithMePage />} />
-                <Route path="/settings" element={<Settings />} />
+                <Route path="/tags" element={<TagsPage />} />
+                <Route path="/settings" element={<SettingsPage />} />
                 <Route path="/settings/variables" element={<SettingsVariables />} />
-                <Route path="/subscription" element={<Subscription />} />
+                <Route path="/subscription" element={<SubscriptionPage />} />
                 <Route path="/notifications" element={<Notifications />} />
             </Route>
 

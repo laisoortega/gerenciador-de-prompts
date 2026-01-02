@@ -1,141 +1,107 @@
 import React, { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { LayoutGrid, Share2, Plus, Settings, LogOut, User, MoreHorizontal, X } from 'lucide-react';
+import { FileText, Settings, Plus, LogOut, Moon, Sun, X } from 'lucide-react';
 import { useStore } from '../../contexts/StoreContext';
 import { useAuth } from '../../contexts/AuthContext';
+import { useTheme } from '../../contexts/ThemeContext';
+import clsx from 'clsx';
 
 export const MobileBottomNav: React.FC = () => {
-    const { user, setMobileMenuOpen, isMobileMenuOpen, setCreatePromptModalOpen } = useStore();
+    const { user, setCreatePromptModalOpen } = useStore();
     const { signOut } = useAuth();
+    const { theme, setTheme } = useTheme();
     const navigate = useNavigate();
-    const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+    const [isMenuOpen, setMenuOpen] = useState(false);
+
+    const bgColor = theme === 'dark' ? '#1d1d1d' : '#f6f6f6';
 
     return (
         <>
-            {/* FAB - Floating Action Button for Create */}
+            {/* FAB */}
             <button
                 onClick={() => setCreatePromptModalOpen(true)}
-                className="lg:hidden fixed right-4 bottom-20 z-40 w-14 h-14 rounded-full bg-primary-500 text-white shadow-lg shadow-primary-500/30 flex items-center justify-center transition-all active:scale-95 hover:bg-primary-400 hover:shadow-xl animate-fadeIn"
+                className="lg:hidden fixed right-4 bottom-20 z-40 w-14 h-14 rounded-full bg-primary-500 text-white shadow-lg flex items-center justify-center active:scale-95"
                 style={{ marginBottom: 'env(safe-area-inset-bottom, 0)' }}
             >
                 <Plus className="w-6 h-6" />
             </button>
 
-            {/* Profile Menu Overlay */}
-            {isProfileMenuOpen && (
+            {/* Menu Overlay */}
+            {isMenuOpen && (
                 <div className="fixed inset-0 z-[60] lg:hidden">
-                    <div
-                        className="absolute inset-0 bg-black/50 backdrop-blur-sm animate-fadeIn"
-                        onClick={() => setIsProfileMenuOpen(false)}
-                    />
-                    <div className="absolute bottom-0 left-0 right-0 bg-bg-surface rounded-t-2xl animate-slideUp p-4 pb-safe">
-                        {/* Header */}
+                    <div className="absolute inset-0 bg-black/50" onClick={() => setMenuOpen(false)} />
+                    <div className="absolute bottom-0 left-0 right-0 rounded-t-2xl p-4 pb-6" style={{ backgroundColor: bgColor }}>
                         <div className="flex items-center justify-between mb-4">
                             <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center text-white font-bold">
-                                    {user?.name?.charAt(0)}
+                                <div className="w-10 h-10 rounded-full bg-primary-500 flex items-center justify-center text-white font-bold">
+                                    {user?.name?.charAt(0) || 'U'}
                                 </div>
                                 <div>
-                                    <p className="font-medium text-text-primary">{user?.name}</p>
-                                    <p className="text-xs text-text-muted">{user?.email}</p>
+                                    <p className="font-medium text-text-primary">{user?.name || 'Usuário'}</p>
+                                    <p className="text-xs text-text-muted">{user?.email || ''}</p>
                                 </div>
                             </div>
-                            <button
-                                onClick={() => setIsProfileMenuOpen(false)}
-                                className="p-2 rounded-lg text-text-muted hover:bg-bg-hover"
-                            >
+                            <button onClick={() => setMenuOpen(false)} className="p-2 text-text-muted">
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
 
-                        {/* Menu Items */}
                         <div className="space-y-1">
                             <button
-                                onClick={() => {
-                                    setIsProfileMenuOpen(false);
-                                    navigate('/settings');
-                                }}
-                                className="w-full flex items-center gap-3 p-3 rounded-xl text-text-primary hover:bg-bg-hover transition-colors"
+                                onClick={() => { setTheme(theme === 'dark' ? 'light' : 'dark'); }}
+                                className="w-full flex items-center gap-3 p-3 rounded-xl text-text-primary hover:bg-white/10"
                             >
-                                <Settings className="w-5 h-5 text-text-muted" />
-                                Configurações
+                                {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+                                {theme === 'dark' ? 'Modo Claro' : 'Modo Escuro'}
                             </button>
+                            <div className="border-t border-white/10 my-2" />
                             <button
-                                onClick={() => {
-                                    setIsProfileMenuOpen(false);
-                                    navigate('/subscription');
-                                }}
-                                className="w-full flex items-center gap-3 p-3 rounded-xl text-text-primary hover:bg-bg-hover transition-colors"
-                            >
-                                <User className="w-5 h-5 text-text-muted" />
-                                Minha Assinatura
-                            </button>
-                            <div className="border-t border-border-subtle my-2" />
-                            <button
-                                onClick={() => {
-                                    setIsProfileMenuOpen(false);
-                                    signOut();
-                                }}
-                                className="w-full flex items-center gap-3 p-3 rounded-xl text-error-400 hover:bg-error-500/10 transition-colors"
+                                onClick={() => { setMenuOpen(false); signOut(); }}
+                                className="w-full flex items-center gap-3 p-3 rounded-xl text-error-400"
                             >
                                 <LogOut className="w-5 h-5" />
-                                Sair da Conta
+                                Sair
                             </button>
                         </div>
                     </div>
                 </div>
             )}
 
-            {/* Bottom Navigation Bar */}
-            <nav className="fixed bottom-0 left-0 right-0 bg-bg-surface border-t border-border-subtle lg:hidden z-50 animate-slideUp">
-                <div className="flex justify-around items-center max-w-md mx-auto px-2 pt-2 pb-safe">
+            {/* Bottom Nav */}
+            <nav className="fixed bottom-0 left-0 right-0 lg:hidden z-50 border-t border-border-subtle" style={{ backgroundColor: bgColor }}>
+                <div className="flex justify-around items-center max-w-md mx-auto pt-2 pb-4">
                     <NavLink
                         to="/"
-                        className={({ isActive }) => `
-                            flex flex-col items-center gap-0.5 p-2 rounded-xl transition-all active:scale-95 touch-target
-                            ${isActive ? 'text-primary-500' : 'text-text-secondary'}
-                        `}
+                        className={({ isActive }) => clsx(
+                            "flex flex-col items-center gap-0.5 p-2 rounded-xl",
+                            isActive ? 'text-primary-500' : 'text-text-secondary'
+                        )}
                     >
-                        <LayoutGrid className="w-5 h-5" />
-                        <span className="text-[10px] font-medium">Home</span>
+                        <FileText className="w-5 h-5" />
+                        <span className="text-[10px] font-medium">Prompts</span>
                     </NavLink>
 
                     <NavLink
-                        to="/shared-with-me"
-                        className={({ isActive }) => `
-                            flex flex-col items-center gap-0.5 p-2 rounded-xl transition-all active:scale-95 touch-target
-                            ${isActive ? 'text-primary-500' : 'text-text-secondary'}
-                        `}
+                        to="/settings"
+                        className={({ isActive }) => clsx(
+                            "flex flex-col items-center gap-0.5 p-2 rounded-xl",
+                            isActive ? 'text-primary-500' : 'text-text-secondary'
+                        )}
                     >
-                        <Share2 className="w-5 h-5" />
-                        <span className="text-[10px] font-medium">Shared</span>
+                        <Settings className="w-5 h-5" />
+                        <span className="text-[10px] font-medium">Config</span>
                     </NavLink>
 
                     <button
-                        onClick={() => setMobileMenuOpen(!isMobileMenuOpen)}
-                        className={`
-                            flex flex-col items-center gap-0.5 p-2 rounded-xl transition-all active:scale-95 touch-target
-                            ${isMobileMenuOpen ? 'text-primary-500' : 'text-text-secondary'}
-                        `}
+                        onClick={() => setMenuOpen(true)}
+                        className="flex flex-col items-center gap-0.5 p-2 rounded-xl text-text-secondary"
                     >
-                        <LayoutGrid className="w-5 h-5" />
-                        <span className="text-[10px] font-medium">Menu</span>
-                    </button>
-
-                    {/* Profile Button with Menu */}
-                    <button
-                        onClick={() => setIsProfileMenuOpen(true)}
-                        className="flex flex-col items-center gap-0.5 p-2 rounded-xl transition-all active:scale-95 touch-target text-text-secondary"
-                    >
-                        <div className="w-6 h-6 rounded-full bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center text-white text-[10px] font-bold">
-                            {user?.name?.charAt(0)}
+                        <div className="w-6 h-6 rounded-full bg-primary-500 flex items-center justify-center text-white text-[10px] font-bold">
+                            {user?.name?.charAt(0) || 'U'}
                         </div>
-                        <span className="text-[10px] font-medium">Perfil</span>
+                        <span className="text-[10px] font-medium">Mais</span>
                     </button>
                 </div>
-
-                {/* Extra safe area padding */}
-                <div className="h-safe bg-bg-surface" />
             </nav>
         </>
     );

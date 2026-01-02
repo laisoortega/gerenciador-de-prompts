@@ -1,98 +1,154 @@
-import { Fragment } from 'react'
-import { Dialog, Transition } from '@headlessui/react'
-import { X } from 'lucide-react'
-import clsx from 'clsx'
+import React, { useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
+import { X } from 'lucide-react';
 
 interface ModalProps {
-    open?: boolean;
+    isOpen?: boolean;
+    open?: boolean; // Alias for isOpen
     onClose: () => void;
+    title?: string;
     children: React.ReactNode;
+    footer?: React.ReactNode;
     size?: 'sm' | 'md' | 'lg' | 'xl';
 }
 
-export function Modal({ open = true, onClose, children, size = 'md' }: ModalProps) {
-    return (
-        <Transition show={open} as={Fragment}>
-            <Dialog onClose={onClose} className="relative z-50">
-                {/* Backdrop */}
-                <Transition.Child
-                    as={Fragment}
-                    enter="ease-out duration-300"
-                    enterFrom="opacity-0"
-                    enterTo="opacity-100"
-                    leave="ease-in duration-200"
-                    leaveFrom="opacity-100"
-                    leaveTo="opacity-0"
-                >
-                    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" />
-                </Transition.Child>
+interface ModalSubComponentProps {
+    children: React.ReactNode;
+    className?: string;
+}
 
-                {/* Container */}
-                <div className="fixed inset-0 flex w-screen items-end sm:items-center justify-center p-3 sm:p-4">
-                    <Transition.Child
-                        as={Fragment}
-                        enter="ease-out duration-300"
-                        enterFrom="opacity-0 translate-y-full md:translate-y-0 md:scale-95"
-                        enterTo="opacity-100 translate-y-0 md:scale-100"
-                        leave="ease-in duration-200"
-                        leaveFrom="opacity-100 translate-y-0 md:scale-100"
-                        leaveTo="opacity-0 translate-y-full md:translate-y-0 md:scale-95"
-                    >
-                        <Dialog.Panel
-                            onClick={(e) => e.stopPropagation()}
-                            className={clsx(
-                                // Base styles
-                                "w-full bg-bg-surface shadow-xl ring-1 ring-white/10 overflow-hidden flex flex-col",
-                                // Mobile: max height with margin, rounded corners
-                                "max-h-[90vh] rounded-2xl",
-                                // Tablet+: auto height, max-height limited
-                                "sm:h-auto sm:max-h-[85vh]",
-                                // Size variants
-                                {
-                                    'sm:max-w-sm': size === 'sm',
-                                    'sm:max-w-md': size === 'md',
-                                    'sm:max-w-2xl': size === 'lg',
-                                    'sm:max-w-4xl': size === 'xl',
-                                }
-                            )}
-                        >
-                            {/* Mobile drag handle */}
-                            <div className="sm:hidden flex justify-center py-2 bg-bg-surface">
-                                <div className="w-10 h-1 rounded-full bg-border-default" />
-                            </div>
+// Subcomponents
+const ModalHeader: React.FC<ModalSubComponentProps> = ({ children, className = '' }) => (
+    <div className={`flex items-center justify-between px-6 py-4 border-b border-border-subtle ${className}`}>
+        {children}
+    </div>
+);
 
-                            {/* Close button */}
-                            <div className="absolute right-3 top-3 md:right-4 md:top-4 z-10">
+const ModalBody: React.FC<ModalSubComponentProps> = ({ children, className = '' }) => (
+    <div className={`px-6 py-5 overflow-y-auto flex-1 ${className}`}>
+        {children}
+    </div>
+);
+
+const ModalFooter: React.FC<ModalSubComponentProps> = ({ children, className = '' }) => (
+    <div className={`flex items-center justify-end gap-3 px-6 py-4 border-t border-border-subtle ${className}`}>
+        {children}
+    </div>
+);
+
+// Main Modal Component
+const ModalComponent: React.FC<ModalProps> = ({
+    isOpen,
+    open,
+    onClose,
+    title,
+    children,
+    footer,
+    size = 'md',
+}) => {
+    const overlayRef = useRef<HTMLDivElement>(null);
+
+    // Support both isOpen and open props
+    const isVisible = isOpen ?? open ?? true;
+
+    // Close on Escape key
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') onClose();
+        };
+
+        if (isVisible) {
+            document.addEventListener('keydown', handleKeyDown);
+            document.body.style.overflow = 'hidden';
+        }
+
+        return () => {
+            document.removeEventListener('keydown', handleKeyDown);
+            document.body.style.overflow = '';
+        };
+    }, [isVisible, onClose]);
+
+    // Close on overlay click
+    const handleOverlayClick = (e: React.MouseEvent) => {
+        if (e.target === overlayRef.current) {
+            onClose();
+        }
+    };
+
+    if (!isVisible) return null;
+
+    const sizes = {
+        sm: 'max-w-sm',
+        md: 'max-w-md',
+        lg: 'max-w-lg',
+        xl: 'max-w-xl',
+    };
+
+    // Check if children includes subcomponents (Header, Body, Footer)
+    const hasSubcomponents = React.Children.toArray(children).some(
+        (child) => React.isValidElement(child) &&
+            (child.type === ModalHeader || child.type === ModalBody || child.type === ModalFooter)
+    );
+
+    return createPortal(
+        <div
+            ref={overlayRef}
+            onClick={handleOverlayClick}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn"
+        >
+            <div
+                className={`
+                    w-full ${sizes[size]}
+                    bg-bg-surface
+                    border border-border-subtle
+                    rounded-2xl shadow-2xl
+                    animate-scaleIn
+                    max-h-[90vh] overflow-hidden flex flex-col
+                `}
+            >
+                {hasSubcomponents ? (
+                    // Render with subcomponents (new pattern)
+                    children
+                ) : (
+                    // Legacy pattern with title/children/footer props
+                    <>
+                        {/* Header */}
+                        {title && (
+                            <div className="flex items-center justify-between px-6 py-4 border-b border-border-subtle">
+                                <h2 className="text-lg font-semibold text-text-primary">
+                                    {title}
+                                </h2>
                                 <button
                                     onClick={onClose}
-                                    className="p-2 rounded-full text-text-muted hover:text-text-primary hover:bg-bg-hover transition-colors touch-target flex items-center justify-center"
+                                    className="p-1.5 rounded-lg text-text-muted hover:text-text-primary hover:bg-bg-hover transition-colors"
                                 >
                                     <X className="w-5 h-5" />
                                 </button>
                             </div>
+                        )}
+
+                        {/* Body */}
+                        <div className="px-6 py-5 overflow-y-auto flex-1">
                             {children}
-                        </Dialog.Panel>
-                    </Transition.Child>
-                </div>
-            </Dialog>
-        </Transition>
-    )
-}
+                        </div>
 
-Modal.Header = ({ children, className }: { children: React.ReactNode; className?: string }) => (
-    <div className={clsx("p-4 md:p-6 border-b border-border-subtle pr-12", className)}>
-        {children}
-    </div>
-)
+                        {/* Footer */}
+                        {footer && (
+                            <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-border-subtle">
+                                {footer}
+                            </div>
+                        )}
+                    </>
+                )}
+            </div>
+        </div>,
+        document.body
+    );
+};
 
-Modal.Body = ({ children, className }: { children: React.ReactNode; className?: string }) => (
-    <div className={clsx("flex-1 overflow-y-auto scroll-mobile p-4 md:p-6", className)}>
-        {children}
-    </div>
-)
-
-Modal.Footer = ({ children, className }: { children: React.ReactNode; className?: string }) => (
-    <div className={clsx("p-4 md:p-6 border-t border-border-subtle flex justify-end gap-3 bg-bg-surface pb-safe", className)}>
-        {children}
-    </div>
-)
+// Attach subcomponents to Modal
+export const Modal = Object.assign(ModalComponent, {
+    Header: ModalHeader,
+    Body: ModalBody,
+    Footer: ModalFooter,
+});

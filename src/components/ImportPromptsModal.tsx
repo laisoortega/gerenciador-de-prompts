@@ -195,7 +195,7 @@ export const ImportPromptsModal: React.FC<ImportPromptsModalProps> = ({ onClose 
                             value={textInput}
                             onChange={(e) => setTextInput(e.target.value)}
                             placeholder="Cole seus prompts aqui. Separe cada prompt com uma linha em branco."
-                            className="w-full h-40 p-3 rounded-xl border border-border-default bg-bg-surface text-text-primary placeholder-text-muted resize-none focus:ring-2 focus:ring-primary-500 focus:outline-none"
+                            className="w-full h-40 p-3 rounded-xl border border-border-default bg-bg-surface text-text-primary placeholder-text-muted resize-none focus:outline-none focus:border-primary-500 focus:outline-none"
                         />
                         <Button onClick={handleTextParse} className="mt-2">
                             Processar Texto

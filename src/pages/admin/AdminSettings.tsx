@@ -335,7 +335,7 @@ export const AdminSettings: React.FC = () => {
                             value={settings.plan_limits.free_prompt_limit}
                             onChange={(e) => updatePlanLimits('free_prompt_limit', parseInt(e.target.value) || 0)}
                             disabled={isSaving}
-                            className="w-full md:w-48 px-3 py-2.5 bg-bg-elevated border border-border-default rounded-xl text-text-primary focus:ring-2 focus:ring-primary-500 focus:border-primary-500 disabled:opacity-50"
+                            className="w-full md:w-48 px-3 py-2.5 bg-bg-elevated border border-border-default rounded-xl text-text-primary focus:outline-none focus:border-primary-500 disabled:opacity-50"
                         />
                     </div>
                     <div>
@@ -347,7 +347,7 @@ export const AdminSettings: React.FC = () => {
                             value={settings.plan_limits.pro_prompt_limit}
                             onChange={(e) => updatePlanLimits('pro_prompt_limit', parseInt(e.target.value) || 0)}
                             disabled={isSaving}
-                            className="w-full md:w-48 px-3 py-2.5 bg-bg-elevated border border-border-default rounded-xl text-text-primary focus:ring-2 focus:ring-primary-500 focus:border-primary-500 disabled:opacity-50"
+                            className="w-full md:w-48 px-3 py-2.5 bg-bg-elevated border border-border-default rounded-xl text-text-primary focus:outline-none focus:border-primary-500 disabled:opacity-50"
                         />
                     </div>
                     <div>
@@ -359,7 +359,7 @@ export const AdminSettings: React.FC = () => {
                             value={settings.plan_limits.max_variables_per_prompt}
                             onChange={(e) => updatePlanLimits('max_variables_per_prompt', parseInt(e.target.value) || 0)}
                             disabled={isSaving}
-                            className="w-full md:w-48 px-3 py-2.5 bg-bg-elevated border border-border-default rounded-xl text-text-primary focus:ring-2 focus:ring-primary-500 focus:border-primary-500 disabled:opacity-50"
+                            className="w-full md:w-48 px-3 py-2.5 bg-bg-elevated border border-border-default rounded-xl text-text-primary focus:outline-none focus:border-primary-500 disabled:opacity-50"
                         />
                     </div>
                 </div>
@@ -377,7 +377,7 @@ export const AdminSettings: React.FC = () => {
                             value={settings.branding.site_name}
                             onChange={(e) => updateBranding('site_name', e.target.value)}
                             disabled={isSaving}
-                            className="w-full md:w-80 px-3 py-2.5 bg-bg-elevated border border-border-default rounded-xl text-text-primary focus:ring-2 focus:ring-primary-500 focus:border-primary-500 disabled:opacity-50"
+                            className="w-full md:w-80 px-3 py-2.5 bg-bg-elevated border border-border-default rounded-xl text-text-primary focus:outline-none focus:border-primary-500 disabled:opacity-50"
                         />
                     </div>
                     <div>
@@ -389,7 +389,7 @@ export const AdminSettings: React.FC = () => {
                             value={settings.branding.support_email}
                             onChange={(e) => updateBranding('support_email', e.target.value)}
                             disabled={isSaving}
-                            className="w-full md:w-80 px-3 py-2.5 bg-bg-elevated border border-border-default rounded-xl text-text-primary focus:ring-2 focus:ring-primary-500 focus:border-primary-500 disabled:opacity-50"
+                            className="w-full md:w-80 px-3 py-2.5 bg-bg-elevated border border-border-default rounded-xl text-text-primary focus:outline-none focus:border-primary-500 disabled:opacity-50"
                         />
                     </div>
                 </div>

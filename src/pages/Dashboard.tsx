@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useStore } from '../contexts/StoreContext';
 import { Prompt } from '../types';
-import { usePromptFilters } from '../hooks/usePromptFilters';
 import { usePlanLimits } from '../hooks/usePlanLimits';
 import { FilterBar } from '../components/FilterBar';
 import { CreatePromptModal } from '../components/CreatePromptModal';
@@ -10,17 +9,12 @@ import { UsePromptModal } from '../components/UsePromptModal';
 import { ViewPromptModal } from '../components/ViewPromptModal';
 import { UpgradePlanModal } from '../components/UpgradePlanModal';
 import { CardsView } from '../components/views/CardsView';
-import { TableView } from '../components/views/TableView';
-import { KanbanView } from '../components/views/KanbanView';
-import { FoldersView } from '../components/views/FoldersView';
 
 export const Dashboard: React.FC = () => {
     const {
-        prompts, currentView, categories, movePrompt, deletePrompt, toggleFavorite,
+        prompts, deletePrompt, toggleFavorite, updatePrompt,
         searchQuery, setSearchQuery, isCreatePromptModalOpen, setCreatePromptModalOpen,
-        selectedCategoryId, setSelectedCategoryId,
-        onlyFavorites, setOnlyFavorites,
-        openCreatePromptWithCategory, preSelectedCategoryForModal
+        selectedTag, setSelectedTag,
     } = useStore();
 
     const { canCreatePrompt, usage, limits, usagePercentage } = usePlanLimits();
@@ -31,62 +25,75 @@ export const Dashboard: React.FC = () => {
     const [viewingPrompt, setViewingPrompt] = useState<Prompt | null>(null);
     const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
-    // Local filter state for advanced filters
-    const [selectedTags, setSelectedTags] = useState<string[]>([]);
-    const [recommendedAi, setRecommendedAi] = useState<string | null>(null);
-    const [sortBy, setSortBy] = useState<'newest' | 'oldest' | 'az' | 'za'>('newest');
+    // Use selectedTag from store as the filter (synced with TagsPage navigation)
+    const selectedCategory = selectedTag;
+    const setSelectedCategory = setSelectedTag;
+    const [onlyFavorites, setOnlyFavorites] = useState(false);
 
-    // Pass state to hook
-    const { filteredPrompts, availableTags } = usePromptFilters(prompts, {
-        searchQuery,
-        categoryId: selectedCategoryId,
-        categories, // Pass all categories for subcategory filtering
-        tags: selectedTags,
-        onlyFavorites,
-        recommendedAi
-    });
+    // Derive unique tags from prompts (from the tags array field)
+    const uniqueCategories = useMemo(() => {
+        const allTags: string[] = [];
+        prompts.forEach(p => {
+            // Tags podem estar no campo tags (array) ou como string separada por vírgula
+            if (Array.isArray(p.tags)) {
+                allTags.push(...p.tags);
+            } else if (typeof p.tags === 'string' && p.tags) {
+                allTags.push(...p.tags.split(',').map(t => t.trim()).filter(t => t));
+            }
+        });
+        return [...new Set(allTags)].sort();
+    }, [prompts]);
 
-    // Sort filtered prompts based on sortBy state
-    const sortedPrompts = [...filteredPrompts].sort((a, b) => {
-        switch (sortBy) {
-            case 'newest':
-                return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-            case 'oldest':
-                return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
-            case 'az':
-                return a.title.localeCompare(b.title);
-            case 'za':
-                return b.title.localeCompare(a.title);
-            default:
-                return 0;
-        }
-    });
+    // Filter prompts
+    const filteredPrompts = useMemo(() => {
+        return prompts.filter(p => {
+            // Search filter (search in title, content, and tags)
+            if (searchQuery) {
+                const q = searchQuery.toLowerCase();
+                const matchTitle = p.title.toLowerCase().includes(q);
+                const matchContent = p.content.toLowerCase().includes(q);
+                const promptTags = Array.isArray(p.tags) ? p.tags : [];
+                const matchTags = promptTags.some(tag => tag.toLowerCase().includes(q));
+                if (!matchTitle && !matchContent && !matchTags) {
+                    return false;
+                }
+            }
+            // Tag filter
+            if (selectedCategory) {
+                const promptTags = Array.isArray(p.tags) ? p.tags : [];
+                if (!promptTags.includes(selectedCategory)) {
+                    return false;
+                }
+            }
+            // Favorites filter
+            if (onlyFavorites && !p.is_favorite) {
+                return false;
+            }
+            return true;
+        });
+    }, [prompts, searchQuery, selectedCategory, onlyFavorites]);
+
+    // Sort by newest
+    const sortedPrompts = [...filteredPrompts].sort((a, b) =>
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    );
 
     // Handler for FilterBar
     const handleFilterChange = (key: string, value: any) => {
-        if (key === 'category_id') setSelectedCategoryId(value);
-        if (key === 'tags') setSelectedTags(value);
+        if (key === 'category') setSelectedCategory(value);
         if (key === 'only_favorites') setOnlyFavorites(value);
-        if (key === 'recommended_ai') setRecommendedAi(value);
-        if (key === 'sort_by') setSortBy(value);
     };
 
     const handleClearFilters = () => {
         setSearchQuery('');
-        setSelectedCategoryId(null);
-        setSelectedTags([]);
+        setSelectedCategory(null);
         setOnlyFavorites(false);
-        setRecommendedAi(null);
-        setSortBy('newest');
     };
 
-    // Filter state object for FilterBar
+    // Filter state for FilterBar
     const filters = {
-        category_id: selectedCategoryId,
-        tags: selectedTags,
+        category: selectedCategory,
         only_favorites: onlyFavorites,
-        sort_by: sortBy,
-        recommended_ai: recommendedAi
     };
 
     const handleEditPrompt = (prompt: Prompt) => {
@@ -106,30 +113,44 @@ export const Dashboard: React.FC = () => {
     };
 
     // Verifica limite antes de criar prompt
-    const handleCreatePrompt = (categoryId?: string) => {
+    const handleCreatePrompt = () => {
         if (!canCreatePrompt) {
             setShowUpgradeModal(true);
             return;
         }
         setEditingPrompt(undefined);
-        if (categoryId) {
-            openCreatePromptWithCategory(categoryId);
-        } else {
-            setCreatePromptModalOpen(true);
-        }
+        setCreatePromptModalOpen(true);
     };
 
     return (
-        <div className="animate-fadeIn pb-24 md:pb-8"> {/* Added padding bottom for mobile fab space */}
-
-            {/* Header Mobile / Title Section */}
-            <div className="md:hidden flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold text-text-primary">Meus Prompts</h2>
+        <div className="animate-fadeIn pb-24 md:pb-8">
+            {/* Search Bar */}
+            <div className="mb-4">
+                <div className="relative">
+                    <input
+                        type="text"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        placeholder="Buscar prompts..."
+                        className="w-full h-12 pl-12 pr-4 rounded-xl border border-border-default bg-bg-surface text-text-primary placeholder-text-muted focus:outline-none focus:border-primary-500"
+                    />
+                    <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                    {searchQuery && (
+                        <button
+                            onClick={() => setSearchQuery('')}
+                            className="absolute right-4 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-primary"
+                        >
+                            ✕
+                        </button>
+                    )}
+                </div>
             </div>
 
             <FilterBar
                 filters={filters}
-                availableTags={availableTags}
+                categories={uniqueCategories}
                 onFilterChange={handleFilterChange}
                 onClear={handleClearFilters}
             />
@@ -150,46 +171,37 @@ export const Dashboard: React.FC = () => {
                     </button>
                 </div>
             ) : (
-                <>
-                    {currentView === 'cards' && (
-                        <CardsView
-                            prompts={sortedPrompts}
-                            onShare={setSharingPrompt}
-                            onEdit={handleEditPrompt}
-                            onDelete={handleDeletePrompt}
-                            onUse={setUsingPrompt}
-                            onToggleFavorite={(p) => toggleFavorite(p.id)}
-                            onView={setViewingPrompt}
-                        />
-                    )}
-                    {currentView === 'table' && (
-                        <TableView
-                            prompts={sortedPrompts}
-                            onShare={setSharingPrompt}
-                            onEdit={handleEditPrompt}
-                            onDelete={handleDeletePrompt}
-                        />
-                    )}
-                    {currentView === 'kanban' && (
-                        <KanbanView
-                            prompts={sortedPrompts}
-                            categories={categories}
-                            onMovePrompt={movePrompt}
-                            onEdit={handleEditPrompt}
-                            onDelete={handleDeletePrompt}
-                            onCreatePrompt={(categoryId) => handleCreatePrompt(categoryId)}
-                        />
-                    )}
-                    {currentView === 'folders' && (
-                        <FoldersView
-                            prompts={sortedPrompts}
-                            categories={categories}
-                            onShare={setSharingPrompt}
-                            onEdit={handleEditPrompt}
-                            onDelete={handleDeletePrompt}
-                        />
-                    )}
-                </>
+                <CardsView
+                    prompts={sortedPrompts}
+                    onShare={setSharingPrompt}
+                    onEdit={handleEditPrompt}
+                    onDelete={handleDeletePrompt}
+                    onUse={setUsingPrompt}
+                    onToggleFavorite={(p) => toggleFavorite(p.id)}
+                    onView={setViewingPrompt}
+                    onTagClick={(tag) => setSelectedCategory(tag)}
+                    onBulkDelete={(ids) => ids.forEach(id => deletePrompt(id))}
+                    onBulkAddTag={(ids, tag) => {
+                        ids.forEach(id => {
+                            const prompt = prompts.find(p => p.id === id);
+                            if (prompt) {
+                                const currentTags = Array.isArray(prompt.tags) ? prompt.tags : [];
+                                if (!currentTags.includes(tag)) {
+                                    updatePrompt(id, { tags: [...currentTags, tag] });
+                                }
+                            }
+                        });
+                    }}
+                    onBulkRemoveTag={(ids, tag) => {
+                        ids.forEach(id => {
+                            const prompt = prompts.find(p => p.id === id);
+                            if (prompt) {
+                                const currentTags = Array.isArray(prompt.tags) ? prompt.tags : [];
+                                updatePrompt(id, { tags: currentTags.filter(t => t !== tag) });
+                            }
+                        });
+                    }}
+                />
             )}
 
             {/* Modal de criação/edição */}
@@ -208,7 +220,18 @@ export const Dashboard: React.FC = () => {
 
             {/* Modal de uso do prompt */}
             {usingPrompt && (
-                <UsePromptModal prompt={usingPrompt} onClose={() => setUsingPrompt(null)} />
+                <UsePromptModal
+                    prompt={usingPrompt}
+                    onClose={() => setUsingPrompt(null)}
+                    onEdit={() => {
+                        setUsingPrompt(null);
+                        handleEditPrompt(usingPrompt);
+                    }}
+                    onDelete={() => {
+                        setUsingPrompt(null);
+                        deletePrompt(usingPrompt.id);
+                    }}
+                />
             )}
 
             {/* Modal de upgrade quando limite atingido */}

@@ -1,55 +1,36 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Outlet } from 'react-router-dom';
-import { useStore } from '../contexts/StoreContext';
 import { Sidebar } from '../components/ui/Sidebar';
-import { Header } from '../components/ui/Header';
 import { MobileBottomNav } from '../components/ui/MobileBottomNav';
-import { CreateCategoryModal } from '../components/CreateCategoryModal';
+import clsx from 'clsx';
 
 export const AppLayout: React.FC = () => {
-    const {
-        isCreateCategoryModalOpen,
-        setCreateCategoryModalOpen,
-        isMobileMenuOpen,
-        setMobileMenuOpen
-    } = useStore();
+    const [isSidebarCollapsed, setSidebarCollapsed] = useState(false);
 
     return (
-        <div className="flex h-screen bg-bg-base overflow-hidden relative">
-            {/* Desktop Sidebar - only on large screens */}
+        <div className="flex h-screen bg-bg-base overflow-hidden">
+            {/* Sidebar - Desktop only */}
             <div className="hidden lg:block">
-                <Sidebar />
+                <Sidebar
+                    isCollapsed={isSidebarCollapsed}
+                    onToggle={() => setSidebarCollapsed(!isSidebarCollapsed)}
+                />
             </div>
 
-            {/* Mobile/Tablet Sidebar Overlay */}
-            {isMobileMenuOpen && (
-                <div className="fixed inset-0 z-40 lg:hidden">
-                    {/* Backdrop */}
-                    <div
-                        className="absolute inset-0 bg-black/50 backdrop-blur-sm animate-fadeIn"
-                        onClick={() => setMobileMenuOpen(false)}
-                    />
-                    {/* Sidebar Content */}
-                    <div className="absolute left-0 top-0 bottom-0 w-[85%] max-w-xs bg-bg-surface animate-slideRight">
-                        <Sidebar />
-                    </div>
-                </div>
-            )}
-
-            <div className="flex-1 flex flex-col min-w-0 mb-[60px] lg:mb-0">
-                <Header />
-                <main className="flex-1 overflow-y-auto p-4 lg:p-6 scrollbar-thin">
+            {/* Main Content - Offset by sidebar width */}
+            <main
+                className={clsx(
+                    "flex-1 overflow-y-auto mb-[60px] lg:mb-0 transition-all duration-300",
+                    isSidebarCollapsed ? "lg:ml-16" : "lg:ml-56"
+                )}
+            >
+                <div className="max-w-4xl mx-auto px-4 lg:px-8 py-6">
                     <Outlet />
-                </main>
-            </div>
+                </div>
+            </main>
 
             {/* Bottom Nav visible only on mobile */}
             <MobileBottomNav />
-
-            {/* Global Modal: Category only - Prompt modal is in Dashboard with edit data */}
-            {isCreateCategoryModalOpen && (
-                <CreateCategoryModal onClose={() => setCreateCategoryModalOpen(false)} />
-            )}
         </div>
     );
 };

@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
+import { seedPromptsForNewUser } from '../services/seedService';
 
 interface AuthContextType {
     user: User | null;
@@ -38,13 +39,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         });
 
         // Listen for auth changes
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
             setSession(session);
             setUser(session?.user ?? null);
 
             // Detect password recovery event
             if (event === 'PASSWORD_RECOVERY') {
                 setIsRecoveryMode(true);
+            }
+
+            // Seed prompts for new users on first login
+            if (event === 'SIGNED_IN' && session?.user) {
+                // Run seeding in background (don't block login)
+                seedPromptsForNewUser(session.user.id).catch(err => {
+                    console.error('[Auth] Erro no seeding:', err);
+                });
             }
         });
 

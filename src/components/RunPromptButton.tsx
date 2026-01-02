@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Play, ExternalLink, Copy, Check, ChevronDown, MessageSquare, Code2 } from 'lucide-react';
 import { Button } from './ui/Button';
+import { useStore } from '../contexts/StoreContext';
 
 // Plataformas de Chat (IAs)
 const chatPlatforms = [
@@ -36,6 +37,7 @@ interface Platform {
 
 interface RunPromptButtonProps {
     content: string;
+    promptId?: string;  // Optional: para contabilizar uso
     variant?: 'primary' | 'secondary' | 'ghost' | 'outline';
     size?: 'sm' | 'md' | 'lg';
     className?: string;
@@ -44,11 +46,13 @@ interface RunPromptButtonProps {
 
 export function RunPromptButton({
     content,
+    promptId,
     variant = 'primary',
     size = 'md',
     className = '',
     showLabel = true
 }: RunPromptButtonProps) {
+    const { incrementCopyCount } = useStore();
     const [isOpen, setIsOpen] = useState(false);
     const [activeTab, setActiveTab] = useState<'chat' | 'code'>('chat');
     const [copied, setCopied] = useState(false);
@@ -57,6 +61,11 @@ export function RunPromptButton({
     const activePlatforms = activeTab === 'chat' ? chatPlatforms : codePlatforms;
 
     const handleRun = async (platform: Platform) => {
+        // Contabilizar uso
+        if (promptId) {
+            incrementCopyCount(promptId);
+        }
+
         // Se a plataforma não suporta querystring, copiar e abrir
         if (platform.supportsQuerystring === false) {
             try {

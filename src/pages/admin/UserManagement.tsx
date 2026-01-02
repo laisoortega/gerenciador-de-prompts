@@ -177,7 +177,7 @@ export const UserManagement: React.FC = () => {
                         <input
                             type="text"
                             placeholder="Buscar usuários..."
-                            className="bg-bg-elevated border border-border-default text-text-primary pl-10 pr-4 py-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 w-64"
+                            className="bg-bg-elevated border border-border-default text-text-primary pl-10 pr-4 py-2 rounded-xl focus:outline-none focus:outline-none focus:border-primary-500 w-64"
                             value={searchTerm}
                             onChange={e => setSearchTerm(e.target.value)}
                         />

@@ -1,60 +1,89 @@
-import { ButtonHTMLAttributes, forwardRef } from 'react';
-import { clsx, type ClassValue } from 'clsx';
-import { twMerge } from 'tailwind-merge';
+import React from 'react';
 
-function cn(...inputs: ClassValue[]) {
-    return twMerge(clsx(inputs));
+interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+    variant?: 'primary' | 'secondary' | 'ghost' | 'danger';
+    size?: 'sm' | 'md' | 'lg';
+    loading?: boolean;
+    icon?: React.ReactNode;
+    children: React.ReactNode;
 }
 
-interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-    variant?: 'primary' | 'secondary' | 'ghost' | 'danger' | 'outline';
-    size?: 'sm' | 'md' | 'lg' | 'icon';
-    isLoading?: boolean;
-}
-
-export const Button = forwardRef<HTMLButtonElement, ButtonProps>(({
-    className,
+export const Button: React.FC<ButtonProps> = ({
     variant = 'primary',
     size = 'md',
-    isLoading = false,
+    loading = false,
+    icon,
     children,
     disabled,
+    className = '',
     ...props
-}, ref) => {
+}) => {
+    const baseStyles = `
+    inline-flex items-center justify-center gap-2
+    font-medium rounded-lg transition-all
+    focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[var(--color-bg-base)]
+    disabled:opacity-50 disabled:cursor-not-allowed
+  `;
 
     const variants = {
-        primary: "bg-primary-600 hover:bg-primary-500 text-white shadow-lg shadow-[#3b82f633]",
-        secondary: "bg-bg-elevated hover:bg-bg-hover text-text-primary border border-border-default",
-        ghost: "bg-transparent hover:bg-bg-hover text-text-secondary hover:text-text-primary",
-        danger: "bg-error-500/10 text-error-500 hover:bg-error-500/20",
-        outline: "bg-transparent border border-border-default hover:border-text-muted text-text-secondary hover:text-text-primary"
+        primary: `
+      bg-[var(--color-accent)] text-white
+      hover:bg-[var(--color-accent-hover)]
+      focus:ring-[var(--color-accent)]
+    `,
+        secondary: `
+      bg-[var(--color-bg-surface)] text-[var(--color-text-primary)]
+      border border-[var(--color-border)]
+      hover:bg-[var(--color-bg-hover)]
+      focus:ring-[var(--color-border-strong)]
+    `,
+        ghost: `
+      text-[var(--color-text-secondary)]
+      hover:bg-[var(--color-bg-hover)] hover:text-[var(--color-text-primary)]
+      focus:ring-[var(--color-border)]
+    `,
+        danger: `
+      bg-[var(--color-error)] text-white
+      hover:opacity-90
+      focus:ring-[var(--color-error)]
+    `,
     };
 
     const sizes = {
-        sm: "h-8 px-3 text-xs",
-        md: "h-10 px-4 py-2",
-        lg: "h-12 px-6 text-lg",
-        icon: "h-9 w-9 p-0 flex items-center justify-center"
+        sm: 'px-3 py-1.5 text-xs',
+        md: 'px-4 py-2 text-sm',
+        lg: 'px-6 py-3 text-base',
     };
 
     return (
         <button
-            ref={ref}
-            className={cn(
-                "inline-flex items-center justify-center whitespace-nowrap rounded-xl font-medium transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50",
-                variants[variant],
-                sizes[size],
-                className
-            )}
-            disabled={disabled || isLoading}
+            className={`${baseStyles} ${variants[variant]} ${sizes[size]} ${className}`}
+            disabled={disabled || loading}
             {...props}
         >
-            {isLoading && (
-                <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-            )}
+            {loading ? (
+                <svg
+                    className="animate-spin h-4 w-4"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                >
+                    <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                    />
+                    <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                    />
+                </svg>
+            ) : icon}
             {children}
         </button>
     );
-});
-
-Button.displayName = "Button";
+};
