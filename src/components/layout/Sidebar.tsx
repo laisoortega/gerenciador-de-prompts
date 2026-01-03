@@ -130,7 +130,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
     };
 
     const navItems = [
-        { to: '/', icon: Icons.prompts, label: 'Meus Prompts' },
+        { to: '/prompts', icon: Icons.prompts, label: 'Meus Prompts' },
         { to: '/shared-with-me', icon: Icons.shared, label: 'Compartilhados' },
         { to: '/tags', icon: Icons.tags, label: 'Tags' },
         { to: '/variables', icon: Icons.variables, label: 'Variáveis' },

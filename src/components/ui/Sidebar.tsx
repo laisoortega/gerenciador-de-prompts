@@ -20,7 +20,7 @@ export function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
     const { setCreatePromptModalOpen, user } = useStore();
 
     const navItems = [
-        { id: 'prompts', label: 'Meus Prompts', icon: FileText, path: '/' },
+        { id: 'prompts', label: 'Meus Prompts', icon: FileText, path: '/prompts' },
         { id: 'shared', label: 'Compartilhados', icon: Users, path: '/shared-with-me' },
         { id: 'tags', label: 'Tags', icon: Tag, path: '/tags' },
         { id: 'variables', label: 'Variáveis', icon: Variable, path: '/settings/variables' },

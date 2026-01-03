@@ -24,7 +24,7 @@ export function AppLogoText({ className = '' }: { className?: string }) {
         <div className={`flex items-center gap-2 ${className}`}>
             <PortalVortexIcon size={20} className="text-primary-500" />
             <span className="font-semibold text-lg text-text-primary">
-                A-Lá-Laís
+                Blaze
             </span>
         </div>
     );
