@@ -147,13 +147,13 @@ const PromptCard: React.FC<{
                     {prompt.content}
                 </p>
 
-                {/* Tags: Estilo "Tag" Real (Fundo sutil, cor de destaque) */}
+                {/* Tags: Estilo "Chip" Tecnológico (Neutro e Premium) */}
                 {prompt.tags && prompt.tags.length > 0 && (
                     <div className="flex flex-wrap gap-2 mb-6">
                         {prompt.tags.map(tag => (
                             <span
                                 key={tag}
-                                className="px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wider uppercase bg-primary-500/10 text-primary-500"
+                                className="px-3 py-1 rounded-lg text-xs font-medium bg-bg-elevated text-text-secondary border border-border-subtle/50 hover:border-text-muted hover:text-text-primary transition-colors"
                             >
                                 {tag}
                             </span>
