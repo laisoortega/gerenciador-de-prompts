@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Share2, Pencil, Trash2, Star, Copy, Check, Zap, MoreHorizontal } from 'lucide-react';
+import { Share2, Pencil, Trash2, Star, Copy, Check, Zap, MoreHorizontal, Play } from 'lucide-react';
 import { Prompt } from '../../types';
 import { Menu, Transition } from '@headlessui/react';
 import clsx from 'clsx';
@@ -147,13 +147,13 @@ const PromptCard: React.FC<{
                     {prompt.content}
                 </p>
 
-                {/* Tags: Estilo Pill (Limpo e reconhecível) */}
+                {/* Tags: Estilo "Tag" Real (Fundo sutil, cor de destaque) */}
                 {prompt.tags && prompt.tags.length > 0 && (
                     <div className="flex flex-wrap gap-2 mb-6">
                         {prompt.tags.map(tag => (
                             <span
                                 key={tag}
-                                className="px-3 py-1 rounded-full text-[11px] font-medium bg-bg-elevated text-text-secondary border border-transparent hover:border-border-subtle transition-colors"
+                                className="px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wider uppercase bg-primary-500/10 text-primary-500"
                             >
                                 {tag}
                             </span>
@@ -161,33 +161,22 @@ const PromptCard: React.FC<{
                     </div>
                 )}
 
-                {/* Bottom: Uso + Copiar Direto */}
-                <div className="mt-auto flex items-center justify-between pt-2 border-t border-border-subtle/20 group-hover:border-border-subtle/50 transition-colors">
-                    <div className="flex items-center gap-1.5 text-text-muted py-3">
+                {/* Bottom: Uso + Botão Usar (Sem Linha Divisória) */}
+                <div className="mt-auto flex items-center justify-between pt-2">
+                    <div className="flex items-center gap-1.5 text-text-muted py-2">
                         <Zap className="w-3.5 h-3.5" />
                         <span className="text-[11px] font-medium">{copyCount} usos</span>
                     </div>
 
                     <button
-                        onClick={handleCopyDirect}
-                        className={clsx(
-                            "flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold transition-all duration-300",
-                            copied
-                                ? "bg-success-500/10 text-success-500"
-                                : "text-text-secondary hover:text-primary-500 hover:bg-primary-500/5"
-                        )}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onUse && onUse(prompt);
+                        }}
+                        className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary-500 text-white font-bold text-xs shadow-lg shadow-primary-500/20 hover:bg-primary-600 hover:shadow-primary-500/40 hover:-translate-y-0.5 transition-all duration-300"
                     >
-                        {copied ? (
-                            <>
-                                <Check className="w-3.5 h-3.5" />
-                                <span>Copiado</span>
-                            </>
-                        ) : (
-                            <>
-                                <Copy className="w-3.5 h-3.5" />
-                                <span>Copiar</span>
-                            </>
-                        )}
+                        <Play className="w-3.5 h-3.5 fill-current" />
+                        <span>Usar</span>
                     </button>
                 </div>
             </div>
