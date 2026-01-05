@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Share2, Pencil, Trash2, Star, Copy, Check, Zap } from 'lucide-react';
+import { Share2, Pencil, Trash2, Star, Copy, Check, Zap, MoreHorizontal } from 'lucide-react';
 import { Prompt } from '../../types';
 import { Menu, Transition } from '@headlessui/react';
 import clsx from 'clsx';
