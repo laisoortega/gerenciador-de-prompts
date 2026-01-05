@@ -42,37 +42,42 @@ const PromptCard: React.FC<{
 
     return (
         <div
-            className="group relative flex flex-col h-full card-premium hover-lift overflow-hidden cursor-pointer"
+            className="group relative flex flex-col h-full rounded-2xl bg-bg-surface border border-transparent transition-all duration-300 hover:border-border-subtle/50 hover:shadow-2xl hover:-translate-y-1 overflow-hidden cursor-pointer"
             onClick={() => onView && onView(prompt)}
         >
             {/* Efeito Visual UAU - Fade de degradê sutil no hover */}
-            <div className="absolute inset-0 bg-gradient-to-br from-primary-500/10 via-transparent to-accent-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-br from-primary-500/5 via-transparent to-accent-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
 
-            <div className="relative p-6 flex flex-col h-full z-10 transition-transform duration-500">
+            {/* Top Highlight on Hover */}
+            <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-primary-500/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+
+            <div className="relative p-6 flex flex-col h-full z-10">
                 {/* Header: Título + Ações Rápidas */}
                 <div className="flex items-start justify-between gap-4 mb-4">
-                    <h3 className="flex-1 font-bold text-lg text-text-primary leading-snug tracking-tight">
+                    <h3 className="flex-1 font-bold text-lg text-text-primary leading-snug tracking-tight group-hover:text-primary-500 transition-colors">
                         {prompt.title}
                     </h3>
 
-                    <div className="flex items-center gap-2 flex-shrink-0">
+                    <div className="flex items-center gap-1 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                        {/* Ações aparecem no hover para ser SUPER clean */}
+
                         {/* Favoritar */}
                         <button
                             onClick={(e) => { e.stopPropagation(); onToggleFavorite && onToggleFavorite(prompt); }}
                             className={clsx(
-                                "w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-200",
+                                "p-2 rounded-lg transition-colors",
                                 prompt.is_favorite
-                                    ? "bg-accent-500/10 text-accent-500 shadow-sm"
-                                    : "bg-bg-elevated text-text-muted hover:bg-bg-hover hover:text-text-primary"
+                                    ? "text-accent-500 bg-accent-500/10"
+                                    : "text-text-muted hover:bg-bg-elevated hover:text-text-primary"
                             )}
                         >
-                            <Star className={clsx("w-4.5 h-4.5", prompt.is_favorite && "fill-current")} />
+                            <Star className={clsx("w-4 h-4", prompt.is_favorite && "fill-current")} />
                         </button>
 
                         {/* Menu de Opções */}
                         <Menu as="div" className="relative">
                             <Menu.Button
-                                className="w-10 h-10 rounded-xl flex items-center justify-center bg-bg-elevated text-text-muted hover:bg-bg-hover hover:text-text-primary transition-all duration-200"
+                                className="p-2 rounded-lg text-text-muted hover:bg-bg-elevated hover:text-text-primary transition-colors"
                                 onClick={(e) => e.stopPropagation()}
                             >
                                 <MoreHorizontal className="w-5 h-5" />
@@ -85,13 +90,13 @@ const PromptCard: React.FC<{
                                 leaveFrom="transform opacity-100 scale-100"
                                 leaveTo="transform opacity-0 scale-95"
                             >
-                                <Menu.Items className="absolute right-0 top-full mt-2 w-48 origin-top-right rounded-2xl bg-bg-surface border border-border-default shadow-2xl z-50 py-2 focus:outline-none backdrop-blur-xl">
+                                <Menu.Items className="absolute right-0 top-full mt-2 w-48 origin-top-right rounded-xl bg-bg-elevated border border-border-default shadow-xl z-50 py-1 focus:outline-none backdrop-blur-xl">
                                     <Menu.Item>
                                         {({ active }) => (
                                             <button
                                                 onClick={(e) => { e.stopPropagation(); onEdit && onEdit(prompt); }}
                                                 className={clsx(
-                                                    "w-full flex items-center gap-3 px-4 py-3 text-sm transition-colors",
+                                                    "w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors",
                                                     active ? "bg-bg-hover text-text-primary" : "text-text-secondary"
                                                 )}
                                             >
@@ -104,7 +109,7 @@ const PromptCard: React.FC<{
                                             <button
                                                 onClick={(e) => { e.stopPropagation(); onShare(prompt); }}
                                                 className={clsx(
-                                                    "w-full flex items-center gap-3 px-4 py-3 text-sm transition-colors",
+                                                    "w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors",
                                                     active ? "bg-bg-hover text-text-primary" : "text-text-secondary"
                                                 )}
                                             >
@@ -112,14 +117,13 @@ const PromptCard: React.FC<{
                                             </button>
                                         )}
                                     </Menu.Item>
-                                    <div className="mx-2 my-1 border-t border-border-subtle/50" />
                                     <Menu.Item>
                                         {({ active }) => (
                                             <button
                                                 onClick={(e) => { e.stopPropagation(); onDelete && onDelete(prompt); }}
                                                 className={clsx(
-                                                    "w-full flex items-center gap-3 px-4 py-3 text-sm transition-colors",
-                                                    active ? "bg-red-500/10 text-red-500" : "text-text-secondary"
+                                                    "w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors",
+                                                    active ? "bg-error-500/10 text-error-500" : "text-text-secondary"
                                                 )}
                                             >
                                                 <Trash2 className="w-4 h-4" /> Excluir
@@ -130,6 +134,12 @@ const PromptCard: React.FC<{
                             </Transition>
                         </Menu>
                     </div>
+                    {/* Se não estiver em hover, mostrar star se favorito */}
+                    {!prompt.is_favorite ? null : (
+                        <div className="group-hover:hidden text-accent-500">
+                            <Star className="w-4 h-4 fill-current" />
+                        </div>
+                    )}
                 </div>
 
                 {/* Conteúdo: Preview do Prompt */}
@@ -137,13 +147,13 @@ const PromptCard: React.FC<{
                     {prompt.content}
                 </p>
 
-                {/* Tags: Estilo Minimalista (Padrão Blaze) */}
+                {/* Tags: Estilo Pill (Limpo e reconhecível) */}
                 {prompt.tags && prompt.tags.length > 0 && (
-                    <div className="flex flex-wrap gap-1.5 mb-6">
+                    <div className="flex flex-wrap gap-2 mb-6">
                         {prompt.tags.map(tag => (
                             <span
                                 key={tag}
-                                className="text-[10px] font-bold text-primary-500/80 tracking-widest uppercase bg-primary-500/5 px-2 py-1 rounded"
+                                className="px-3 py-1 rounded-full text-[11px] font-medium bg-bg-elevated text-text-secondary border border-transparent hover:border-border-subtle transition-colors"
                             >
                                 {tag}
                             </span>
@@ -152,29 +162,29 @@ const PromptCard: React.FC<{
                 )}
 
                 {/* Bottom: Uso + Copiar Direto */}
-                <div className="mt-auto flex items-center justify-between pt-2">
-                    <div className="flex items-center gap-1.5 text-text-muted">
-                        <Zap className="w-3.5 h-3.5 fill-current opacity-40" />
-                        <span className="text-[11px] font-bold tracking-widest uppercase">{copyCount} usos</span>
+                <div className="mt-auto flex items-center justify-between pt-2 border-t border-border-subtle/20 group-hover:border-border-subtle/50 transition-colors">
+                    <div className="flex items-center gap-1.5 text-text-muted py-3">
+                        <Zap className="w-3.5 h-3.5" />
+                        <span className="text-[11px] font-medium">{copyCount} usos</span>
                     </div>
 
                     <button
                         onClick={handleCopyDirect}
                         className={clsx(
-                            "group/copy relative flex items-center gap-2 px-5 py-2.5 rounded-xl transition-all duration-300 font-bold text-xs shadow-sm active:scale-95",
+                            "flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold transition-all duration-300",
                             copied
-                                ? "bg-success-500 text-white shadow-success-500/30"
-                                : "bg-primary-500 text-white hover:bg-primary-600 shadow-primary-500/20 hover:shadow-primary-500/40"
+                                ? "bg-success-500/10 text-success-500"
+                                : "text-text-secondary hover:text-primary-500 hover:bg-primary-500/5"
                         )}
                     >
                         {copied ? (
                             <>
-                                <Check className="w-4 h-4" />
-                                <span>Copiado!</span>
+                                <Check className="w-3.5 h-3.5" />
+                                <span>Copiado</span>
                             </>
                         ) : (
                             <>
-                                <Copy className="w-4 h-4 transition-transform group-hover/copy:scale-110" />
+                                <Copy className="w-3.5 h-3.5" />
                                 <span>Copiar</span>
                             </>
                         )}
