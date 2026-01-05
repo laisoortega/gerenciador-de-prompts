@@ -99,19 +99,21 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
     // --- Data Hooks (React Query) ---
 
-    // Ref para rastrear o último authUser.id processado
+    // Ref para rastrear o último authUser.id processado e se já inicializou
     const lastAuthUserIdRef = useRef<string | null>(null);
+    const hasInitializedRef = useRef(false);
 
     // Setup user and workspace when auth changes
     useEffect(() => {
         const currentAuthUserId = authUser?.id ?? null;
 
-        // Só executa setup se o authUser.id realmente mudou
-        // Isso evita re-renders quando Supabase dispara eventos sem mudança real
-        if (currentAuthUserId === lastAuthUserIdRef.current) {
+        // Na primeira execução, sempre roda
+        // Depois, só roda se authUser.id realmente mudou
+        if (hasInitializedRef.current && currentAuthUserId === lastAuthUserIdRef.current) {
             return;
         }
 
+        hasInitializedRef.current = true;
         lastAuthUserIdRef.current = currentAuthUserId;
 
         const setupUserAndWorkspace = async () => {
