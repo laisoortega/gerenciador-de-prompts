@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode, useMemo } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useMemo, useRef } from 'react';
 import { User, Workspace, Prompt, Category, ViewType, Plan } from '../types';
 import { INITIAL_USER, MOCK_WORKSPACES, MOCK_PROMPTS, MOCK_CATEGORIES, MOCK_PLANS } from '../services/mockData';
 import { fetchUserDefaultWorkspace, seedDefaultVariables } from '../services/api';
@@ -99,8 +99,21 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
     // --- Data Hooks (React Query) ---
 
+    // Ref para rastrear o último authUser.id processado
+    const lastAuthUserIdRef = useRef<string | null>(null);
+
     // Setup user and workspace when auth changes
     useEffect(() => {
+        const currentAuthUserId = authUser?.id ?? null;
+
+        // Só executa setup se o authUser.id realmente mudou
+        // Isso evita re-renders quando Supabase dispara eventos sem mudança real
+        if (currentAuthUserId === lastAuthUserIdRef.current) {
+            return;
+        }
+
+        lastAuthUserIdRef.current = currentAuthUserId;
+
         const setupUserAndWorkspace = async () => {
             setIsLoadingUser(true);
 
