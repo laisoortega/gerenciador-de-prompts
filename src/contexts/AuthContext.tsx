@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 import { seedPromptsForNewUser } from '../services/seedService';
@@ -23,6 +23,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [isLoading, setIsLoading] = useState(true);
     const [isRecoveryMode, setIsRecoveryMode] = useState(false);
 
+    // Ref para ter acesso ao valor atual do user dentro do callback do Supabase
+    const userRef = useRef<User | null>(null);
+    useEffect(() => { userRef.current = user; }, [user]);
+
     useEffect(() => {
         if (!supabase) {
             // Mock mode - simulate logged in user
@@ -39,9 +43,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         });
 
         // Listen for auth changes
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-            setSession(session);
-            setUser(session?.user ?? null);
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, newSession) => {
+            // Só atualiza estado se realmente houve mudança no usuário
+            // Evita re-renders desnecessários quando Supabase dispara eventos ao retornar para aba
+            const newUserId = newSession?.user?.id ?? null;
+            const currentUserId = userRef.current?.id ?? null;
+
+            if (newUserId !== currentUserId || event === 'SIGNED_OUT' || event === 'SIGNED_IN') {
+                setSession(newSession);
+                setUser(newSession?.user ?? null);
+            }
 
             // Detect password recovery event
             if (event === 'PASSWORD_RECOVERY') {
@@ -49,9 +60,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             }
 
             // Seed prompts for new users on first login
-            if (event === 'SIGNED_IN' && session?.user) {
+            if (event === 'SIGNED_IN' && newSession?.user) {
                 // Run seeding in background (don't block login)
-                seedPromptsForNewUser(session.user.id).catch(err => {
+                seedPromptsForNewUser(newSession.user.id).catch(err => {
                     console.error('[Auth] Erro no seeding:', err);
                 });
             }
