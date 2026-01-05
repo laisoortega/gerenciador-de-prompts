@@ -66,24 +66,39 @@ export function RunPromptButton({
             incrementCopyCount(promptId);
         }
 
-        // Se a plataforma não suporta querystring, copiar e abrir
-        if (platform.supportsQuerystring === false) {
+        const targetUrl = platform.buildUrl ? platform.buildUrl(content) : '';
+        // 2000 caracteres é um limite seguro para URLs em todos os browsers
+        const isUrlTooLong = targetUrl.length > 2000;
+        const shouldFallback = platform.supportsQuerystring === false || (!!platform.buildUrl && isUrlTooLong);
+
+        if (shouldFallback) {
             try {
                 await navigator.clipboard.writeText(content);
                 setCopiedForPlatform(platform.name);
-                setTimeout(() => {
+
+                // Se o motivo do fallback for o tamanho da URL, avisa o usuário
+                if (isUrlTooLong && platform.supportsQuerystring !== false) {
+                    // Alert é usado aqui para garantir que o usuário leia a instrução antes de mudar de aba
+                    alert("O prompt é muito longo para preenchimento automático.\n\nEle foi COPIADO para sua área de transferência.\n\nCole no chat (Ctrl+V) após abrir a janela.");
                     window.open(platform.baseUrl, '_blank');
                     setCopiedForPlatform(null);
-                }, 1500);
+                } else {
+                    // Comportamento original para plataformas que não suportam URL parameters
+                    setTimeout(() => {
+                        window.open(platform.baseUrl, '_blank');
+                        setCopiedForPlatform(null);
+                    }, 1500);
+                }
             } catch (err) {
                 console.error('Failed to copy:', err);
+                // Fallback de erro: abre a plataforma mesmo sem copiar
+                window.open(platform.baseUrl, '_blank');
             }
         } else if (platform.buildUrl) {
-            // Abrir diretamente com o prompt na URL
-            const url = platform.buildUrl(content);
-            window.open(url, '_blank');
+            // Caminho feliz: URL curta suportada
+            window.open(targetUrl, '_blank');
         } else {
-            // Fallback: apenas abrir a URL base
+            // Fallback genérico
             window.open(platform.baseUrl, '_blank');
         }
         setIsOpen(false);
