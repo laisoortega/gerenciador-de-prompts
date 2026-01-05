@@ -25,7 +25,10 @@ const queryClient = new QueryClient({
     defaultOptions: {
         queries: {
             refetchOnWindowFocus: false, // Desativa refresh ao voltar para janela
-            staleTime: 1000 * 60 * 5, // 5 minutos
+            refetchOnMount: false, // Desativa refresh ao montar componente
+            refetchOnReconnect: false, // Desativa refresh ao reconectar internet
+            staleTime: 1000 * 60 * 5, // 5 minutos - dados considerados "frescos"
+            gcTime: 1000 * 60 * 30, // 30 minutos - tempo em cache (maior que staleTime)
             retry: 1,
         },
     },
