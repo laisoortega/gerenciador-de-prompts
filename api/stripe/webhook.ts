@@ -125,11 +125,11 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
             plan_id: planSlug,
             stripe_subscription_id: subscriptionId,
             status: 'active',
-            current_period_start: subscription.current_period_start
-                ? new Date(subscription.current_period_start * 1000).toISOString()
+            current_period_start: (subscription as any).current_period_start
+                ? new Date((subscription as any).current_period_start * 1000).toISOString()
                 : new Date().toISOString(),
-            current_period_end: subscription.current_period_end
-                ? new Date(subscription.current_period_end * 1000).toISOString()
+            current_period_end: (subscription as any).current_period_end
+                ? new Date((subscription as any).current_period_end * 1000).toISOString()
                 : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
         }, {
             onConflict: 'user_id',
@@ -171,8 +171,8 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
         .update({
             plan_id: planSlug,
             status: subscription.status,
-            current_period_end: subscription.current_period_end
-                ? new Date(subscription.current_period_end * 1000).toISOString()
+            current_period_end: (subscription as any).current_period_end
+                ? new Date((subscription as any).current_period_end * 1000).toISOString()
                 : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
         })
         .eq('user_id', profile.id);
